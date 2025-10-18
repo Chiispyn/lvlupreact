@@ -1,0 +1,133 @@
+/* src/index.css */
+
+/* ------------------------------------
+   1. DEFINICIÓN DE VARIABLES (DARK MODE - PREDETERMINADO)
+------------------------------------ */
+:root {
+  /* Colores Base */
+  --color-negro: #000000;
+  --color-blanco: #FFFFFF;
+  --color-gris-claro: #D3D3D3;
+  
+  /* Colores de Acento */
+  --color-azul-electrico: #1E90FF; /* Botones, Títulos */
+  --color-verde-neon: #39FF14;     /* Éxito, Acento principal */
+  --color-fondo-secundario: #222222; /* Fondo de Cards/Modals */
+  
+  /* Tipografía */
+  --font-principal: 'Roboto', sans-serif;
+  --font-encabezado: 'Orbitron', sans-serif;
+}
+
+
+/* ------------------------------------
+   2. ESTILO BASE Y ELEMENTOS DARK MODE
+------------------------------------ */
+body {
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  font-family: var(--font-principal);
+  margin: 0; 
+}
+
+/* Header en Dark Mode (Borde Neon) */
+.navbar.bg-dark {
+    background-color: var(--color-negro) !important;
+    border-bottom: 2px solid var(--color-azul-electrico); 
+}
+
+/* Footer en Dark Mode (Borde y Fondo Negro) */
+footer {
+    background-color: var(--color-negro) !important;
+    border-top-color: var(--color-azul-electrico) !important;
+}
+
+/* ------------------------------------
+   3. LÓGICA DE MODO CLARO (LIGHT MODE)
+------------------------------------ */
+
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: #F8F8F8; /* Fondo blanco suave */
+        color: #d8d5d5;             /* Texto gris oscuro */
+    }
+    
+    /* 🚨 CORRECCIÓN HERO SECTION */
+    .hero-section {
+        background-color: #FFFFFF !important; /* Fondo blanco */
+        border-bottom-color: #007bff !important;
+    }
+    
+    .hero-section h1 {
+        color: #007bff !important; /* Título principal azul estándar */
+    }
+    .hero-section p {
+        color: #bebdbd !important; /* Texto principal oscuro */
+    }
+
+    /* Header en Light Mode (Invertir Colores) */
+    .navbar.bg-dark {
+        background-color: #FFFFFF !important;
+        border-bottom: 1px solid #CCCCCC !important;
+    }
+    .navbar.bg-dark .navbar-brand,
+    .navbar.bg-dark .nav-link,
+    .navbar.bg-dark .btn-outline-primary {
+        color: #585757 !important; /* Texto oscuro en el nav */
+    }
+    .navbar.bg-dark .btn-outline-primary {
+        border-color: #007bff !important;
+    }
+
+
+    /* Footer en Light Mode */
+    footer {
+        background-color: #EEEEEE !important;
+        border-top: 1px solid #CCCCCC !important;
+    }
+    footer p,
+    footer li {
+        color: #555555 !important; /* Texto oscuro en el footer */
+    }
+    footer h5 {
+        color: #007bff !important; /* Títulos de sección en azul estándar */
+    }
+
+
+    /* Encabezados y Acentos Invertidos */
+    h1, h2, h3, h4, h5, h6 {
+        color: #007bff; /* Azul estándar */
+        font-family: var(--font-encabezado);
+    }
+
+    .text-muted {
+        color: #666666 !important;
+    }
+    
+    /* Botones de Éxito (Se ajustan para ser visibles) */
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white !important; 
+        font-weight: bold;
+    }
+    
+    /* Tarjetas/Modals en Light Mode */
+    .card,
+    .modal-content,
+    .alert {
+        background-color: #FFFFFF !important;
+        border-color: #DDDDDD !important;
+        color: #e0dede !important;
+    }
+}
+
+/* ------------------------------------
+   4. ESTILOS NEON (Aplicados siempre en Dark Mode)
+------------------------------------ */
+.btn-success {
+    background-color: var(--color-verde-neon);
+    border-color: var(--color-verde-neon);
+    color: var(--color-negro) !important; 
+    font-weight: bold;
+} 
