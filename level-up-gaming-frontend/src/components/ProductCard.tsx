@@ -7,7 +7,7 @@ import { Product } from '../types/Product';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext'; // Importar useCart
 
-// 🚨 FORMATO CLP GLOBAL (Definición auxiliar)
+// FORMATO CLP GLOBAL
 const CLP_FORMATTER = new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
@@ -22,22 +22,26 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-    // Estado para manejar el fallo de carga de la imagen
     const [imageError, setImageError] = useState(false);
     
-    // Placeholder neutro en caso de error o imagen faltante
     const fallbackImage = 'https://via.placeholder.com/300x200/000000/FFFFFF?text=FOTO+DEL+PRODUCTO';
     
-    const { addToCart } = useCart(); 
+    const { addToCart, cartItems } = useCart(); 
+
+    // 🚨 CORRECCIÓN: Verificar si el producto ya está en el carrito
+    const itemInCart = cartItems.find(item => item.product.id === product.id);
 
     const handleAddToCart = () => {
-        addToCart(product);
+        // Añadir solo si no está ya en el carrito
+        if (!itemInCart) {
+            addToCart(product, 1); // Añade 1 unidad
+        }
     };
 
     const renderRating = () => {
         const fullStars = Math.floor(product.rating);
         const stars = [];
-        for (let i = 0; i < fullStars; i++) { stars.push(<Star key={i} size={16} fill="#FFC107" stroke="#FFC107" />); }
+        for (let i = 0; i < Math.floor(product.rating); i++) { stars.push(<Star key={i} size={16} fill="#FFC107" stroke="#FFC107" />); }
         for (let i = fullStars; i < 5; i++) { stars.push(<Star key={i} size={16} fill="none" stroke="#FFC107" />); }
         return (
             <div className="d-flex align-items-center mb-2">
@@ -52,10 +56,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <Link to={`/producto/${product.id}`}>
                 <Card.Img 
                     variant="top" 
-                    // 🚨 Manejo de la URL y Error
                     src={imageError ? fallbackImage : product.imageUrl} 
                     alt={product.name} 
-                    onError={() => setImageError(true)} // Si la carga falla, activa el estado imageError
+                    onError={() => setImageError(true)} 
                     style={{ height: '200px', objectFit: 'cover' }}
                 />
             </Link>
@@ -70,17 +73,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 {renderRating()}
                 
                 <Card.Text as="h3" className="text-primary mt-auto" style={{ color: '#39FF14' }}>
-                    {formatClp(product.price)} {/* 🚨 Formato CLP */}
+                    {formatClp(product.price)}
                 </Card.Text>
                 
                 <Button 
                     variant="success" 
                     className="w-100 mt-2 d-flex align-items-center justify-content-center"
                     onClick={handleAddToCart}
-                    disabled={product.countInStock === 0} 
+                    // 🚨 Deshabilitar si ya está en el carrito O no hay stock
+                    disabled={product.countInStock === 0 || !!itemInCart} 
                 >
                     <ShoppingCart size={18} className="me-2" />
-                    {product.countInStock === 0 ? 'AGOTADO' : 'Añadir al Carrito'}
+                    {product.countInStock === 0 
+                        ? 'AGOTADO' 
+                        : (itemInCart ? 'EN CARRITO' : 'Añadir al Carrito')}
                 </Button>
             </Card.Body>
         </Card>

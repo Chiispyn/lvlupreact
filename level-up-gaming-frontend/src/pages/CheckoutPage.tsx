@@ -8,19 +8,16 @@ import { useAuth, User as AuthUser } from '../context/AuthContext';
 import axios from 'axios';
 import { Truck, CreditCard, CheckCircle, Download, MapPin } from 'react-feather'; 
 
-// Definición de las interfaces de dirección
+// Definición de las interfaces (Necesarias para el tipado)
 interface ShippingAddress { street: string; city: string; region: string; zipCode?: string; }
 interface CartItem { product: { name: string; price: number }; quantity: number; }
 interface Order { id: string; userId: string; items: CartItem[]; shippingAddress: ShippingAddress; paymentMethod: 'webpay' | 'transferencia' | 'efectivo'; totalPrice: number; shippingPrice: number; isPaid: boolean; status: string; createdAt: string; }
 
-// 🚨 CONSTANTE GLOBAL PARA LA CONVERSIÓN Y FORMATO
-const CLP_FORMATTER = new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-    minimumFractionDigits: 0,
-});
-const FREE_SHIPPING_THRESHOLD_CLP = 100000; // Envío gratis si la compra supera los $100.000 CLP
-const POINTS_RATE = 1000; // 10 puntos por cada 1000 CLP gastados (Tasa de 10/1000)
+// 🚨 CONSTANTES GLOBALES (Necesarias para el formato CLP y lógica de puntos)
+const CLP_FORMATTER = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
+const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
+const FREE_SHIPPING_THRESHOLD_CLP = 100000;
+const POINTS_RATE = 1000; // 10 puntos por cada 1000 CLP gastados
 
 // ----------------------------------------------------
 // COMPONENTE: RESUMEN DE LA ORDEN (AUXILIAR)
@@ -29,12 +26,8 @@ const POINTS_RATE = 1000; // 10 puntos por cada 1000 CLP gastados (Tasa de 10/10
 interface SummaryProps { subtotal: number; shippingPrice: number; discount: number; discountRate: number; totalOrder: number; user: AuthUser | null; }
 
 const OrderSummary: React.FC<SummaryProps> = ({ subtotal, shippingPrice, discount, discountRate, totalOrder, user }) => {
-    // 🚨 Cálculo de Puntos a Ganar basado en la nueva tasa
     const pointsEarned = Math.floor(subtotal / POINTS_RATE) * 10;
     
-    // Función de formato para el resumen
-    const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
-
     return (
         <Card className="p-4 shadow-lg" style={{ backgroundColor: '#111', border: '1px solid #39FF14', color: 'white' }}>
             <h4 className="mb-3" style={{ color: '#39FF14' }}>Resumen de Compra</h4>
@@ -88,6 +81,7 @@ const CheckoutPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
+    
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
     // Redirigir si el carrito está vacío o no está logueado
@@ -98,17 +92,15 @@ const CheckoutPage: React.FC = () => {
 
 
     // CALCULAR COSTOS
-    const subtotal = totalPrice; // Asumimos que totalPrice es el Subtotal en CLP
-    
-    // 🚨 Lógica de Envío Gratuito
-    const shippingCostBase = 5000; // Costo base ficticio $5000 CLP
+    const subtotal = totalPrice;
+    const shippingCostBase = 5000;
     const shippingPrice = subtotal >= FREE_SHIPPING_THRESHOLD_CLP ? 0 : shippingCostBase; 
     
     const discountRate = user?.hasDuocDiscount ? 0.20 : 0; 
     const discount = subtotal * discountRate;
     
     const totalOrder = subtotal + shippingPrice - discount;
-    const pointsEarned = Math.floor(subtotal / POINTS_RATE) * 10; // 🚨 Cálculo de puntos
+    const pointsEarned = Math.floor(subtotal / POINTS_RATE) * 10; 
 
     
     // Función que simula la descarga de la boleta 
@@ -124,6 +116,14 @@ const CheckoutPage: React.FC = () => {
         setLoading(true);
         setError(null);
         
+        // Calcular puntos a restar por canje
+        let totalPointsToRedeem = 0;
+        cartItems.forEach(item => {
+            if (item.isRedeemed && item.pointsCost) {
+                totalPointsToRedeem += item.pointsCost * item.quantity;
+            }
+        });
+        
         try {
             const payload = {
                 userId: user?.id,
@@ -136,17 +136,21 @@ const CheckoutPage: React.FC = () => {
 
             // 1. CREAR ORDEN
             const resOrder = await axios.post<Order>('/api/orders', payload);
-            const createdOrder = resOrder.data;
+            const createdOrderId = resOrder.data.id;
             
-            // 2. 🚨 ACTUALIZAR PUNTOS DEL USUARIO
-            if (user && pointsEarned > 0) {
-                const resPoints = await axios.put<AuthUser>(`/api/users/${user.id}/points`, { pointsToAdd: pointsEarned });
+            // 2. ACTUALIZAR PUNTOS DEL USUARIO (Ganancia - Canje)
+            const netPointsChange = pointsEarned - totalPointsToRedeem;
+            
+            if (user && netPointsChange !== 0) {
+                const resPoints = await axios.put<AuthUser>(`/api/users/${user.id}/points`, { pointsToAdd: netPointsChange });
                 setUserFromRegistration(resPoints.data); 
             }
 
-            // 3. ABRIR MODAL DE BOLETA
-            handleDownloadInvoice(createdOrder.id); 
-            setOrderId(createdOrder.id);
+            // 3. LLAMADA A LA BOLETA INMEDIATA (Simulación de generación)
+            handleDownloadInvoice(createdOrderId); 
+
+            // 4. Abrir Modal y finalizar
+            setOrderId(createdOrderId);
             setShowInvoiceModal(true); 
 
         } catch (error: any) {
@@ -156,9 +160,6 @@ const CheckoutPage: React.FC = () => {
         }
     };
     
-    // Función de formato CLP local para uso en JSX
-    const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
-
     // ----------------------------------------------------
     // VISTAS DE CADA PASO
     // ----------------------------------------------------
@@ -350,9 +351,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ show, handleClose, orderId,
     const handlePrint = () => {
         window.print(); 
     };
-    
-    // Función de formato CLP local
-    const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
 
     // Aseguramos que el modal no se cierre accidentalmente con click
     if (!orderId) return null;

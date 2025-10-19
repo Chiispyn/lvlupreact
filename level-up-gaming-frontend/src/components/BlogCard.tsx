@@ -1,7 +1,7 @@
 // level-up-gaming-frontend/src/components/BlogCard.tsx
 
 import React from 'react';
-import { Card, Button } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 // Interfaces (puedes importarlas desde src/data/blogData si las tienes ahí)

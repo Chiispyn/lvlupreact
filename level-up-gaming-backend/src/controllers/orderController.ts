@@ -1,4 +1,4 @@
-// level-up-gaming-backend/src/controllers/orderController.ts (Código Completo)
+// level-up-gaming-backend/src/controllers/orderController.ts
 
 import { type Request, type Response } from 'express';
 import { mockOrders, Order, ShippingAddress } from '../data/orderData';
@@ -12,7 +12,12 @@ import { v4 as uuidv4 } from 'uuid';
 const addOrderItems = (req: Request, res: Response) => {
     const { userId, items, shippingAddress, paymentMethod, totalPrice, shippingPrice } = req.body;
 
-    if (!items || items.length === 0) { res.status(400).json({ message: 'No hay artículos en la orden.' }); return; }
+    if (!items || items.length === 0) {
+        return res.status(400).json({ message: 'No hay artículos en la orden.' });
+    }
+    if (!userId) {
+        return res.status(401).json({ message: 'Usuario no autenticado para crear la orden.' });
+    }
 
     const newOrder: Order = {
         id: uuidv4(),
@@ -22,8 +27,7 @@ const addOrderItems = (req: Request, res: Response) => {
         paymentMethod: paymentMethod,
         totalPrice: totalPrice,
         shippingPrice: shippingPrice,
-        isPaid: true,
-        // 🚨 Estado Inicial: Pendiente
+        isPaid: true, 
         status: 'Pendiente', 
         createdAt: new Date().toISOString(),
     };
@@ -36,15 +40,17 @@ const addOrderItems = (req: Request, res: Response) => {
 
 // @route   GET /api/orders/myorders
 const getMyOrders = (req: Request, res: Response) => {
-    const userIdToFilter = req.query.userId || 'u1'; 
+    const userIdToFilter = req.query.userId; 
+
+    if (!userIdToFilter) {
+        return res.json([]);
+    }
+
     const userOrders = mockOrders.filter(order => order.userId === userIdToFilter);
+
     res.json(userOrders);
 };
 
-
-// ----------------------------------------------------
-// LÓGICA DE ADMINISTRACIÓN (Actualizar Estado)
-// ----------------------------------------------------
 
 // @route   GET /api/orders
 const getAllOrders = (req: Request, res: Response) => {
@@ -52,14 +58,14 @@ const getAllOrders = (req: Request, res: Response) => {
 };
 
 // @route   PUT /api/orders/:id/status
-// @desc    Actualizar el estado de la orden por Admin
 const updateOrderStatus = (req: Request, res: Response) => {
     const { id } = req.params;
-    const { status } = req.body; // Nuevo estado: 'Preparacion', 'Enviada', etc.
+    const { status } = req.body; 
 
     const orderIndex = mockOrders.findIndex(o => o.id === id);
 
     if (orderIndex !== -1) {
+        // Asumiendo que el 'status' es un valor válido
         mockOrders[orderIndex].status = status;
         res.json(mockOrders[orderIndex]);
         return;

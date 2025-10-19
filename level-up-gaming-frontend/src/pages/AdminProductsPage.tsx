@@ -1,14 +1,13 @@
 // level-up-gaming-frontend/src/pages/AdminProductsPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Button, Modal, Row, Col, Form } from 'react-bootstrap';
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form } from 'react-bootstrap';
 import { Edit, Trash, ArrowLeft, PlusCircle } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Product } from '../types/Product';
 
 const API_URL = '/api/products';
-// 🚨 Lista de Categorías (Debe ser consistente con el Backend)
 const CATEGORIES = ['Consolas', 'Juegos', 'Accesorios', 'Laptops', 'Computadores', 'Juegos de Mesa'];
 
 
@@ -146,13 +145,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Inicializa o limpia estados al abrir/cerrar
         if (currentProduct) {
             setFormData(currentProduct);
-            setPreviewUrl(currentProduct.imageUrl); // Usa la URL existente para edición
+            setPreviewUrl(currentProduct.imageUrl); 
         } else {
             setFormData({
-                name: '', description: '', price: 0, imageUrl: '', specifications: '', category: 'Consolas', // 🚨 Añadir specifications y category
+                name: '', description: '', price: 0, imageUrl: '', specifications: '', category: 'Consolas', 
                 countInStock: 0, isTopSelling: false, rating: 0, numReviews: 0,
             });
             setPreviewUrl(null);
@@ -161,12 +159,23 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     }, [currentProduct, show]);
 
 
-    // FUNCIÓN DE UTILIDAD: Para actualizar el estado
+    // FUNCIÓN DE UTILIDAD: Para actualizar el estado (Acepta solo enteros para precio/stock)
     const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
+        
+        // 🚨 CORRECCIÓN: Para precio y stock, parsear a entero estricto
+        if (name === 'price' || name === 'countInStock') {
+            const integerValue = parseInt(value);
+            // Si el input no es un número válido o es un decimal, solo actualiza si el valor es vacío o un entero
+            if (value === '' || !isNaN(integerValue)) {
+                setFormData((prev: any) => ({ ...prev, [name]: integerValue }));
+            }
+            return;
+        }
+
         setFormData((prev: any) => ({
             ...prev,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : (type === 'number' ? parseFloat(value) : value),
+            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
         }));
     };
 
@@ -195,9 +204,27 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
         setLoading(true);
         setError(null);
 
+        const price = formData.price;
+        const stock = formData.countInStock;
+
+        // 🚨 VALIDACIONES CRÍTICAS DE PRECIO Y STOCK
+        if (price === null || price < 1 || isNaN(price) || !Number.isInteger(price)) {
+            setError('El precio debe ser un número entero y positivo (CLP).');
+            setLoading(false);
+            return;
+        }
+        
+        if (stock === null || stock < 0 || isNaN(stock) || !Number.isInteger(stock)) {
+            setError('El stock debe ser un número entero no negativo.');
+            setLoading(false);
+            return;
+        }
+        // -------------------------------------------
+
+
         let payload: any = { ...formData };
 
-        // --- VALIDACIÓN FINAL ---
+        // --- VALIDACIÓN FINAL Y LIMPIEZA ---
         if (!payload.imageUrl) {
             setError('Debe proporcionar una imagen.');
             setLoading(false);
@@ -241,7 +268,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                         <Form.Control type="text" name="name" value={formData.name || ''} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }} />
                     </Form.Group>
                     
-                    {/* 🚨 SELECT DE CATEGORÍA */}
                     <Form.Group className="mb-3">
                         <Form.Label>Categoría</Form.Label>
                         <Form.Select
@@ -259,13 +285,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                     </Form.Group>
                     
                     <Form.Group className="mb-3">
-                        {/* 🚨 CAMPO UNIFICADO DE DESCRIPCIÓN */}
                         <Form.Label>Descripción del Producto</Form.Label> 
                         <Form.Control as="textarea" rows={3} name="description" value={formData.description || ''} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }} />
                         <Form.Text className="text-muted">Texto general de marketing.</Form.Text>
                     </Form.Group>
                     
-                    {/* 🚨 CAMPO DE ESPECIFICACIONES TÉCNICAS */}
                     <Form.Group className="mb-3">
                         <Form.Label>Especificaciones Técnicas</Form.Label> 
                         <Form.Control 
@@ -282,14 +306,32 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                     <Row>
                         <Col>
                             <Form.Group className="mb-3">
-                                <Form.Label>Precio</Form.Label>
-                                <Form.Control type="number" name="price" value={formData.price ?? 0} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }} />
+                                <Form.Label>Precio (CLP)</Form.Label>
+                                <Form.Control 
+                                    type="number" 
+                                    name="price" 
+                                    value={formData.price ?? 0} 
+                                    onChange={updateFormData} 
+                                    required 
+                                    step="1" // 🚨 CLAVE: Solo permite enteros en el UI
+                                    min="1"
+                                    style={{ backgroundColor: '#333', color: 'white' }} 
+                                />
                             </Form.Group>
                         </Col>
                         <Col>
                             <Form.Group className="mb-3">
                                 <Form.Label>Stock Disponible</Form.Label>
-                                <Form.Control type="number" name="countInStock" value={formData.countInStock ?? 0} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }} />
+                                <Form.Control 
+                                    type="number" 
+                                    name="countInStock" 
+                                    value={formData.countInStock ?? 0} 
+                                    onChange={updateFormData} 
+                                    required 
+                                    step="1" // 🚨 CLAVE: Solo permite enteros en el UI
+                                    min="0"
+                                    style={{ backgroundColor: '#333', color: 'white' }} 
+                                />
                             </Form.Group>
                         </Col>
                     </Row>

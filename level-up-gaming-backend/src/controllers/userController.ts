@@ -29,20 +29,32 @@ const authUser = (req: Request, res: Response) => {
 };
 
 // ----------------------------------------------------
-// LÓGICA DE REGISTRO DE CLIENTE
+// LÓGICA DE REGISTRO DE CLIENTE (CON REFERIDO Y DESCUENTO)
 // ----------------------------------------------------
 
 const registerUser = (req: Request, res: Response) => {
-    const { name, email, password, rut, age, address } = req.body;
+    const { name, email, password, rut, age, address, referredBy } = req.body; 
 
     if (mockUsers.some(u => u.email === email)) {
         return res.status(400).json({ message: 'El correo ya está registrado.' });
     }
     
+    // 🚨 VERIFICACIÓN ESTRICTA DE DESCUENTO DUOCUC.CL
     const hasDuocDiscount = email.toLowerCase().endsWith('@duocuc.cl');
     
-    const startingPoints = 100; 
+    // 1. Puntos base
+    let startingPoints = 100; 
     const referralCode = generateReferralCode(name); 
+
+    // 2. VERIFICACIÓN Y ASIGNACIÓN DE PUNTOS POR REFERIDO
+    if (referredBy) {
+        const referringUserIndex = mockUsers.findIndex(u => u.referralCode === referredBy);
+        
+        if (referringUserIndex !== -1) {
+            startingPoints += 50;
+            mockUsers[referringUserIndex].points += 50; // Suma puntos al referente
+        }
+    }
 
     if (!address || !address.street || !address.city || !address.region) {
         return res.status(400).json({ message: 'Faltan datos de dirección para el registro.' });
@@ -89,7 +101,7 @@ const updateUserProfile = (req: Request, res: Response) => {
 
 
 // ----------------------------------------------------
-// LÓGICA DE ADMINISTRACIÓN: CREACIÓN DE USUARIOS
+// LÓGICA DE ADMINISTRACIÓN: CREACIÓN Y EDICIÓN
 // ----------------------------------------------------
 
 const createUser = (req: Request, res: Response) => {
@@ -111,11 +123,6 @@ const createUser = (req: Request, res: Response) => {
     mockUsers.push(newUser); 
     res.status(201).json(newUser); 
 };
-
-
-// ----------------------------------------------------
-// LÓGICA DE ADMINISTRACIÓN: EDICIÓN Y LISTADO
-// ----------------------------------------------------
 
 const updateUserByAdmin = (req: Request, res: Response) => {
     const { id } = req.params;
@@ -152,11 +159,9 @@ const getUsers = (req: Request, res: Response) => {
 
 
 // ----------------------------------------------------
-// 🚨 FUNCIÓN DE PUNTOS: RETORNA EL OBJETO COMPLETO
+// FUNCIÓN DE PUNTOS: RETORNA EL OBJETO COMPLETO
 // ----------------------------------------------------
 
-// @route   PUT /api/users/:id/points
-// @desc    Añadir O restar puntos al balance del usuario
 const updatePoints = (req: Request, res: Response) => {
     const { id } = req.params;
     const { pointsToAdd } = req.body; 
@@ -173,7 +178,6 @@ const updatePoints = (req: Request, res: Response) => {
         
         mockUsers[userIndex].points = newBalance; 
 
-        // Devolvemos el objeto de usuario COMPLETO actualizado
         const updatedUser = mockUsers[userIndex];
         res.json(updatedUser);
         return;

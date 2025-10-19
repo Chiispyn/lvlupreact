@@ -1,8 +1,8 @@
 // level-up-gaming-frontend/src/pages/AdminUsersPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Badge, Button, Modal, ListGroup, Row, Col, Form } from 'react-bootstrap';
-import { Users, Edit, Trash, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather';
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form } from 'react-bootstrap';
+import { Edit, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { User } from '../context/AuthContext'; 

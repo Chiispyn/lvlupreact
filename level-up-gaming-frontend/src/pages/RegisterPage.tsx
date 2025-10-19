@@ -1,6 +1,6 @@
-// level-up-gaming-frontend/src/pages/RegisterPage.tsx (Código Completo)
+// level-up-gaming-frontend/src/pages/RegisterPage.tsx
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert, Badge } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,9 +13,11 @@ const RegisterPage: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [rut, setRut] = useState('');
     const [age, setAge] = useState('');
-    const [street, setStreet] = useState(''); // 🚨 NUEVO
-    const [city, setCity] = useState('');     // 🚨 NUEVO
-    const [region, setRegion] = useState(''); // 🚨 NUEVO
+    const [street, setStreet] = useState('');
+    const [city, setCity] = useState('');
+    const [region, setRegion] = useState('');
+    const [referralCodeInput, setReferralCodeInput] = useState(''); 
+    
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -27,18 +29,16 @@ const RegisterPage: React.FC = () => {
         return null;
     }
     
-    // 🚨 FUNCIÓN AVANZADA DE VERIFICACIÓN DE RUT (Formato Chileno)
+    // FUNCIÓN DE VERIFICACIÓN DE RUT
     const validateRut = (rutValue: string): boolean => {
-        // 1. Limpiar el RUT: Eliminar puntos y guiones.
         let rutLimpio = rutValue.replace(/[^0-9kK]/g, ''); 
         if (rutLimpio.length < 2) return false;
 
-        let dv = rutLimpio.charAt(rutLimpio.length - 1); // Dígito verificador
+        let dv = rutLimpio.charAt(rutLimpio.length - 1);
         let rutNumeros = rutLimpio.substring(0, rutLimpio.length - 1);
         
-        if (!/^\d+$/.test(rutNumeros)) return false; // Debe ser solo números
+        if (!/^\d+$/.test(rutNumeros)) return false; 
 
-        // 2. Cálculo del Dígito Verificador (Módulo 11)
         let suma = 0;
         let multiplo = 2;
         for (let i = rutNumeros.length - 1; i >= 0; i--) {
@@ -57,23 +57,28 @@ const RegisterPage: React.FC = () => {
         setError(null);
         setLoading(true);
 
-        // --- VALIDACIONES DE FRONTEND ---
+        // --- VALIDACIONES DE FRONTEND (Ajustadas) ---
         if (password !== confirmPassword) { setError('Las contraseñas no coinciden.'); setLoading(false); return; }
         if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); setLoading(false); return; }
         if (!validateRut(rut)) { setError('El RUT ingresado es inválido.'); setLoading(false); return; }
-        if (parseInt(age) < 18) { setError('Debes ser mayor de 18 años para registrarte.'); setLoading(false); return; }
+        
+        const ageInt = parseInt(age);
+        // 🚨 VALIDACIÓN DE EDAD: Restringir entre 18 y 95
+        if (ageInt < 18 || ageInt > 95) { setError('La edad debe estar entre 18 y 95 años.'); setLoading(false); return; }
+        
         if (!street || !city || !region) { setError('Todos los campos de dirección son obligatorios.'); setLoading(false); return; }
         // --- FIN VALIDACIONES ---
 
         try {
-            // Llama a la API de registro y envía TODOS los campos
-            const res = await axios.post('/api/users/register', { 
+            const payload = { 
                 name, email, password,
-                rut: rut.replace(/[^0-9kK]/g, ''), // 🚨 Enviamos el RUT limpio al backend
-                age: parseInt(age),
-                // 🚨 Enviamos la dirección inicial
-                address: { street, city, region, zipCode: '' } 
-            });
+                rut: rut.replace(/[^0-9kK]/g, ''), 
+                age: ageInt, // Usamos la variable ya parseada
+                address: { street, city, region, zipCode: '' },
+                referredBy: referralCodeInput || null
+            };
+
+            const res = await axios.post('/api/users/register', payload);
             
             setUserFromRegistration(res.data); 
             navigate('/'); 
@@ -89,7 +94,7 @@ const RegisterPage: React.FC = () => {
     return (
         <Container className="my-5">
             <Row className="justify-content-md-center">
-                <Col xs={12} md={8}> {/* Aumentamos el tamaño para la dirección */}
+                <Col xs={12} md={8}> 
                     <Card className="p-4" style={{ backgroundColor: '#111', border: '1px solid #39FF14' }}>
                         <h2 className="text-center mb-4" style={{ color: '#39FF14' }}>Registro de Cuenta</h2>
                         <p className="text-center text-muted"><Badge bg="info" className="me-1">¡Regalo!</Badge> Obtienes **100 puntos** y código de referido.</p>
@@ -116,13 +121,31 @@ const RegisterPage: React.FC = () => {
                                 </Col>
                                 <Col xs={4}> {/* Campo Edad */}
                                     <Form.Group className="mb-3" controlId="age"><Form.Label>Edad</Form.Label>
-                                        <Form.Control type="number" value={age} onChange={(e) => setAge(e.target.value)} required min={18} isInvalid={parseInt(age) < 18} style={{ backgroundColor: '#222', color: 'white' }}/></Form.Group>
+                                        <Form.Control 
+                                            type="number" 
+                                            value={age} 
+                                            onChange={(e) => setAge(e.target.value)} 
+                                            required 
+                                            min={18} 
+                                            max={95} // 🚨 Límite de la UI
+                                            isInvalid={parseInt(age) < 18 || parseInt(age) > 95} // 🚨 Límite de la validación
+                                            style={{ backgroundColor: '#222', color: 'white' }}
+                                        />
+                                        <Form.Control.Feedback type="invalid">Edad debe estar entre 18 y 95.</Form.Control.Feedback>
+                                        </Form.Group>
                                 </Col>
                             </Row>
+                            
+                            {/* NUEVO CAMPO: CÓDIGO DE REFERIDO */}
+                            <Form.Group className="mb-3" controlId="referral">
+                                <Form.Label>Código de Referido (Opcional)</Form.Label>
+                                <Form.Control type="text" placeholder="Ingresa un código de amigo" value={referralCodeInput} onChange={(e) => setReferralCodeInput(e.target.value)} style={{ backgroundColor: '#222', color: 'white' }}/>
+                                <Form.Text className="text-muted">Si ingresas un código, tú y tu amigo ganarán 50 puntos extra.</Form.Text>
+                            </Form.Group>
+
 
                             {/* 2. DIRECCIÓN DE ENVÍO */}
                             <h5 className="mb-3 mt-4 border-top pt-3" style={{ color: '#1E90FF' }}>Dirección de Envío</h5>
-                            
                             <Form.Group className="mb-3" controlId="street"><Form.Label>Calle y Número</Form.Label>
                                 <Form.Control type="text" value={street} onChange={(e) => setStreet(e.target.value)} required style={{ backgroundColor: '#222', color: 'white' }}/></Form.Group>
                             

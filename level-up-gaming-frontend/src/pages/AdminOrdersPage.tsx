@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Badge, Button, Modal, ListGroup, Row, Col, Form } from 'react-bootstrap';
-import { ShoppingBag, Truck, Check, X, ArrowLeft, Eye, Clock, Box } from 'react-feather';
+import { ArrowLeft, Eye, Box } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 

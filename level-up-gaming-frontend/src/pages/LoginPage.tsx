@@ -3,7 +3,6 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext'; 
 
 const LoginPage: React.FC = () => {

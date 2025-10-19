@@ -59,10 +59,10 @@ export interface VideoItem {
 
 // --- Mock Data de Comunidad ---
 export const mockLevels: Level[] = [
-  { id: 1, name: 'bronze', minPoints: 5000, benefits: ['Envío estándar gratuito'] },
-  { id: 2, name: 'silver', minPoints: 15000, benefits: ['Descuento del 10%'] },
-  { id: 3, name: 'gold', minPoints: 25000, benefits: ['Descuento del 10% en pedidos.', 'Soporte prioritario.'] },
-  { id: 4, name: 'diamond', minPoints: 50000, benefits: ['Descuento del 15% en pedidos.', 'Regalo de cumpleaños.', 'Acceso a eventos VIP.'] },
+  { id: 1, name: 'Bronze', minPoints: 0, benefits: [''] },
+  { id: 2, name: 'Silver', minPoints: 5000, benefits: ['Descuento del 5%'] },
+  { id: 3, name: 'Gold', minPoints: 20000, benefits: ['Descuento del 10% en pedidos.', 'Soporte prioritario.'] },
+  { id: 4, name: 'V.I.P.', minPoints: 50000, benefits: ['Descuento del 15% en pedidos.', 'Regalo de cumpleaños.', 'Acceso a eventos VIP.'] },
 ];
 
 export const mockEvents: Event[] = [
@@ -78,13 +78,13 @@ export const mockUserPoints: UserPoints = {
 };
 
 export const mockRewards: Reward[] = [
-    { id: 101, type: 'Producto', name: 'Taza Gamer Edición Limitada', pointsCost: 800, description: 'Canjea tus puntos por una taza exclusiva de Level-Up.' },
-    { id: 102, type: 'Descuento', name: 'Cupón de $5.000 CLP', pointsCost: 1000, description: 'Descuento aplicable a tu próxima compra.' },
-    { id: 103, type: 'Producto', name: 'Mousepad RGB Extendido', pointsCost: 1800, description: 'Mousepad amplio con iluminación RGB.' },
+    { id: 101, type: 'Producto', name: 'Taza Gamer Edición Limitada', pointsCost: 2800, description: 'Canjea tus puntos por una taza exclusiva de Level-Up.' },
+    { id: 102, type: 'Descuento', name: 'Cupón de $5.000 CLP', pointsCost: 6000, description: 'Descuento aplicable a tu próxima compra.' },
+    { id: 103, type: 'Producto', name: 'Mousepad RGB Extendido', pointsCost: 18000, description: 'Mousepad amplio con iluminación RGB.' },
     // 🚨 RECOMPENSAS ADICIONALES AÑADIDAS
-    { id: 104, type: 'Descuento', name: 'Envío Express Gratuito', pointsCost: 500, description: 'Cubre el costo de tu envío express (Valor: $5.000 CLP).' },
-    { id: 105, type: 'Producto', name: 'Polera Gamer Level-Up', pointsCost: 1500, description: 'Polera con diseño del logo de la tienda.' },
-    { id: 106, type: 'Descuento', name: 'Cupón de 15% OFF', pointsCost: 3500, description: 'Descuento del 15% para una compra grande.' },
+    { id: 104, type: 'Descuento', name: 'Envío Express Gratuito', pointsCost: 3500, description: 'Cubre el costo de tu envío express (Valor: $5.000 CLP).' },
+    { id: 105, type: 'Producto', name: 'Polera Gamer Level-Up', pointsCost: 15000, description: 'Polera con diseño del logo de la tienda.' },
+    { id: 106, type: 'Descuento', name: 'Cupón de 15% OFF', pointsCost: 35000, description: 'Descuento del 15% para una compra grande.' },
 ];
 
 // --- Módulos de Noticias (para HomePage) ---

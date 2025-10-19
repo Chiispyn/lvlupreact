@@ -4,10 +4,12 @@ import React from 'react';
 import { Container, Row, Col, Alert, ListGroup, Button, Image, Badge } from 'react-bootstrap';
 import { ShoppingCart, Trash, Plus, Minus } from 'react-feather';
 import { useCart } from '../context/CartContext'; 
+import { useAuth } from '../context/AuthContext'; 
 import { Link } from 'react-router-dom'; // Importación clave
 
 const CartPage: React.FC = () => {
     const { cartItems, totalPrice, cartCount, removeFromCart, increaseQuantity, decreaseQuantity, clearCart } = useCart();
+    const { user, isLoggedIn } = useAuth(); 
     
     // Si la lista está vacía
     if (cartItems.length === 0) {
@@ -15,23 +17,22 @@ const CartPage: React.FC = () => {
             <Container className="py-5">
                 <h1 className="mb-4" style={{ color: '#1E90FF' }}><ShoppingCart className="me-2"/> Carrito de Compras</h1>
                 
-                {/* Alerta de Carrito Vacío */}
                 <Alert variant="info" className="text-center" style={{ backgroundColor: '#333', border: '1px solid #1E90FF', color: 'white' }}>
                     ¡Tu carrito está actualmente vacío! Explora nuestro <Link to="/productos" style={{ color: '#39FF14' }}>catálogo</Link> para empezar a comprar.
                 </Alert>
                 
                 <div className="text-center mt-4">
-                    {/* 🚨 CORRECCIÓN: Usar Link y aplicar clases de Bootstrap button */}
-                    <Link 
-                        to="/productos"
-                        className="btn btn-outline-primary" // Clases de Button de Bootstrap
-                    >
+                    {/* 🚨 CORRECCIÓN: Usamos Link y aplicamos clases de Button */}
+                    <Link to="/productos" className="btn btn-outline-primary">
                         Ver Productos
                     </Link>
                 </div>
             </Container>
         );
     }
+
+    // Cálculo simple de costos para el resumen del carrito (sin descuento aplicado AÚN)
+    const subtotal = totalPrice;
 
     return (
         <Container className="py-5">
@@ -85,22 +86,22 @@ const CartPage: React.FC = () => {
                         <h4 className="mb-3" style={{ color: '#1E90FF' }}>Resumen del Pedido</h4>
                         <div className="d-flex justify-content-between my-2 text-muted">
                             <span>Subtotal:</span>
-                            <span>${totalPrice.toFixed(2)}</span>
+                            <span>${subtotal.toFixed(2)}</span>
                         </div>
                         <div className="d-flex justify-content-between fw-bold border-top pt-2" style={{ color: '#39FF14' }}>
                             <span>Total Estimado:</span>
-                            <span>${totalPrice.toFixed(2)}</span>
+                            <span>${subtotal.toFixed(2)}</span>
                         </div>
                         
-                        <Alert variant="warning" className="mt-3" style={{ backgroundColor: '#222', border: 'none', color: 'white' }}>
-                           **Finalizando:** El 20% de descuento y los puntos se aplicarán en la fase de Checkout.
-                        </Alert>
+                        {/* 🚨 CORRECCIÓN CLAVE: Solo mostrar si el usuario está logueado Y tiene el descuento */}
+                        {user && user.hasDuocDiscount && (
+                            <Alert variant="success" className="mt-3" style={{ backgroundColor: '#222', border: '1px solid #39FF14', color: 'white' }}>
+                                🎉 ¡Tu **20% de Descuento DUOCUC** se aplicará en el Checkout!
+                            </Alert>
+                        )}
                         
-                        {/* 🚨 CORRECCIÓN: Usar Link y aplicar clases de Bootstrap button */}
-                        <Link 
-                            to="/checkout"
-                            className="btn btn-success w-100 mt-3" // Clases de Button de Bootstrap
-                        >
+                        {/* 🚨 CORRECCIÓN: Usamos Link con clases de Button para Checkout */}
+                        <Link to="/checkout" className="btn btn-success w-100 mt-3" style={{ pointerEvents: totalPrice === 0 ? 'none' : 'auto', opacity: totalPrice === 0 ? 0.6 : 1 }}>
                             Proceder al Pago
                         </Link>
                     </div>

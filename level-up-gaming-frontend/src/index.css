@@ -7,11 +7,11 @@
   /* Colores Base */
   --color-negro: #000000;
   --color-blanco: #FFFFFF;
-  --color-gris-claro: #D3D3D3;
+  --color-gris-claro: #AAAAAA; /* 🚨 CORRECCIÓN: Usar un gris más claro para el texto secundario */
   
   /* Colores de Acento */
-  --color-azul-electrico: #1E90FF; /* Botones, Títulos */
-  --color-verde-neon: #39FF14;     /* Éxito, Acento principal */
+  --color-azul-electrico: #1E90FF; /* Usado para Headers, Títulos principales */
+  --color-verde-neon: #39FF14;     /* Usado para Botones de Éxito, Acentos de precio */
   --color-fondo-secundario: #222222; /* Fondo de Cards/Modals */
   
   /* Tipografía */
@@ -30,39 +30,60 @@ body {
   margin: 0; 
 }
 
-/* Header en Dark Mode (Borde Neon) */
+/* Encabezados y Acentos */
+h1, h2, h3, h4, h5, h6 {
+  /* El color del encabezado lo hereda del acento azul */
+  color: var(--color-azul-electrico); 
+  font-family: var(--font-encabezado);
+}
+
+/* 🚨 CORRECCIÓN CLAVE: Texto Secundario (Opiniones, Resúmenes, Ayudas en Formulario) */
+.text-muted {
+    /* Usar el gris más claro para el contraste */
+    color: var(--color-gris-claro) !important;
+}
+
+/* Header en Dark Mode */
 .navbar.bg-dark {
     background-color: var(--color-negro) !important;
     border-bottom: 2px solid var(--color-azul-electrico); 
 }
 
-/* Footer en Dark Mode (Borde y Fondo Negro) */
+/* Footer en Dark Mode */
 footer {
     background-color: var(--color-negro) !important;
     border-top-color: var(--color-azul-electrico) !important;
 }
 
+/* Botones de Éxito (Neon) */
+.btn-success {
+    background-color: var(--color-verde-neon);
+    border-color: var(--color-verde-neon);
+    color: var(--color-negro) !important; 
+    font-weight: bold;
+}
+
 /* ------------------------------------
    3. LÓGICA DE MODO CLARO (LIGHT MODE)
+   (Estos estilos se aplican solo si el sistema operativo está en modo claro)
 ------------------------------------ */
 
 @media (prefers-color-scheme: light) {
     body {
-        background-color: #F8F8F8; /* Fondo blanco suave */
-        color: #d8d5d5;             /* Texto gris oscuro */
+        background-color: #F8F8F8; 
+        color: #333333; /* Texto principal oscuro */
     }
     
-    /* 🚨 CORRECCIÓN HERO SECTION */
+    /* Hero Section en Light Mode */
     .hero-section {
-        background-color: #FFFFFF !important; /* Fondo blanco */
+        background-color: #FFFFFF !important; 
         border-bottom-color: #007bff !important;
     }
-    
     .hero-section h1 {
-        color: #007bff !important; /* Título principal azul estándar */
+        color: #007bff !important; 
     }
     .hero-section p {
-        color: #bebdbd !important; /* Texto principal oscuro */
+        color: #333333 !important; 
     }
 
     /* Header en Light Mode (Invertir Colores) */
@@ -73,13 +94,9 @@ footer {
     .navbar.bg-dark .navbar-brand,
     .navbar.bg-dark .nav-link,
     .navbar.bg-dark .btn-outline-primary {
-        color: #585757 !important; /* Texto oscuro en el nav */
+        color: #333333 !important;
     }
-    .navbar.bg-dark .btn-outline-primary {
-        border-color: #007bff !important;
-    }
-
-
+    
     /* Footer en Light Mode */
     footer {
         background-color: #EEEEEE !important;
@@ -87,21 +104,21 @@ footer {
     }
     footer p,
     footer li {
-        color: #555555 !important; /* Texto oscuro en el footer */
+        color: #555555 !important;
     }
     footer h5 {
-        color: #007bff !important; /* Títulos de sección en azul estándar */
+        color: #007bff !important;
     }
 
 
     /* Encabezados y Acentos Invertidos */
     h1, h2, h3, h4, h5, h6 {
         color: #007bff; /* Azul estándar */
-        font-family: var(--font-encabezado);
     }
 
+    /* Texto secundario en modo claro (más oscuro) */
     .text-muted {
-        color: #666666 !important;
+        color: #666666 !important; 
     }
     
     /* Botones de Éxito (Se ajustan para ser visibles) */
@@ -109,7 +126,6 @@ footer {
         background-color: #28a745;
         border-color: #28a745;
         color: white !important; 
-        font-weight: bold;
     }
     
     /* Tarjetas/Modals en Light Mode */
@@ -118,16 +134,6 @@ footer {
     .alert {
         background-color: #FFFFFF !important;
         border-color: #DDDDDD !important;
-        color: #e0dede !important;
+        color: #333333 !important;
     }
 }
-
-/* ------------------------------------
-   4. ESTILOS NEON (Aplicados siempre en Dark Mode)
------------------------------------- */
-.btn-success {
-    background-color: var(--color-verde-neon);
-    border-color: var(--color-verde-neon);
-    color: var(--color-negro) !important; 
-    font-weight: bold;
-} 

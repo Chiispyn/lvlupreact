@@ -1,8 +1,8 @@
 // level-up-gaming-frontend/src/pages/AdminBlogPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, BookOpen } from 'react-feather';
+import { Container, Table, Alert, Spinner, Button, Modal, Form } from 'react-bootstrap';
+import { Edit, Trash, ArrowLeft, PlusCircle } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 

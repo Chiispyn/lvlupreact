@@ -1,9 +1,9 @@
-// level-up-gaming-frontend/src/pages/HomePage.tsx (CÓDIGO COMPLETO)
+// level-up-gaming-frontend/src/pages/HomePage.tsx
 
 import React, { useState, useEffect } from 'react'; 
-import { Container, Row, Col, Spinner, Alert, Card } from 'react-bootstrap';
+import { Container, Row, Col, Carousel, Button, Spinner, Alert, Card, Nav, Badge } from 'react-bootstrap';
 import ProductCard from '../components/ProductCard'; 
-import HeroSection from '../components/HeroSection'; // IMPORTAR NUEVO HERO
+import HeroSection from '../components/HeroSection';
 import { Product } from '../types/Product'; 
 import { Video } from 'react-feather';
 import axios from 'axios';
@@ -18,14 +18,22 @@ interface VideoItem {
 }
 
 
-// Componente BlogCard simplificado (muestra noticias)
+// 🚨 COMPONENTE NewsCard MEJORADO CON IMAGEN
 const NewsCard: React.FC<{ post: BlogPost }> = ({ post }) => (
-    <Card className="h-100 shadow-sm" style={{ backgroundColor: '#111', color: 'white', border: '1px solid #1E90FF' }}>
+    <Card className="h-100 shadow-sm" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
+        {/* 🚨 IMAGEN AÑADIDA */}
+        <Card.Img 
+            variant="top" 
+            src={post.imageUrl} 
+            alt={post.title} 
+            style={{ height: '180px', objectFit: 'cover' }}
+        />
+        
         <Card.Body>
-            <Card.Title style={{ color: '#1E90FF' }}>
-                <Link to={`/blog/${post.id}`} style={{ color: 'inherit' }}>{post.title}</Link>
+            <Card.Title style={{ color: 'var(--color-verde-neon)' }}>
+                <Link to={`/blog/${post.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{post.title}</Link>
             </Card.Title>
-            <Card.Text className="text-primary">{post.excerpt}</Card.Text>
+            <Card.Text style={{ color: 'white' }}>{post.excerpt}</Card.Text>
         </Card.Body>
     </Card>
 );
@@ -45,11 +53,9 @@ const HomePage: React.FC = () => {
     useEffect(() => {
         const fetchTopProducts = async () => {
             try {
-                // Fetch de productos destacados
                 const response = await fetch('/api/products/top'); 
                 const data: Product[] = await response.json();
-                // 🚨 Asegurar que solo se muestren 4, aunque la API ya filtra el top selling
-                setTopProducts(data.slice(0, 4)); 
+                setTopProducts(data);
             } catch (error) {
                 console.error("Error al cargar productos destacados:", error);
             } finally {
@@ -60,7 +66,6 @@ const HomePage: React.FC = () => {
         const fetchLatestNews = async () => {
             try {
                 const response = await axios.get('/api/blog');
-                // 🚨 CORRECCIÓN: Tomar solo 3 noticias para el layout
                 setLatestNews(response.data.slice(0, 3)); 
             } catch (error) {
                 console.error("Error al cargar noticias:", error);
@@ -87,7 +92,7 @@ const HomePage: React.FC = () => {
 
     return (
         <>
-            {/* 🚨 1. SECCIÓN PRINCIPAL: HERO SECTION */}
+            {/* 1. HERO SECTION */}
             <HeroSection />
             
             <Container className="py-5">
@@ -107,7 +112,7 @@ const HomePage: React.FC = () => {
                     latestNews.length === 0 ? (
                         <Alert variant="secondary" className="text-center">No hay noticias destacadas.</Alert>
                     ) : (
-                        <Row xs={1} md={3} className="g-4 mb-5"> {/* 🚨 Layout para 3 noticias */}
+                        <Row xs={1} md={3} className="g-4 mb-5">
                             {latestNews.map((post) => (<Col key={post.id}><NewsCard post={post} /></Col>))}
                         </Row>
                     )

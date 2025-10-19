@@ -1,18 +1,17 @@
-// level-up-gaming-backend/src/routes/blogRoutes.ts (COMPLETO)
+// level-up-gaming-backend/src/routes/orderRoutes.ts
 
-import express from 'express';
-// 🚨 Importar getBlogPostById
-import { getBlogPosts, getBlogPostById, createBlogPost, updateBlogPost, deleteBlogPost } from '../controllers/blogController';
+import express from 'express'; 
+import { addOrderItems, getMyOrders, getAllOrders, updateOrderStatus } from '../controllers/orderController';
 
 const router = express.Router();
 
-// Rutas Públicas (Lectura)
-router.get('/', getBlogPosts); 
-router.get('/:id', getBlogPostById); // 🚨 NUEVA RUTA: GET /api/blog/:id
+// 🚨 RUTA CRÍTICA PARA EL CHECKOUT
+router.post('/', addOrderItems);    // POST /api/orders
 
-// Rutas de Administración (CRUD)
-router.post('/admin', createBlogPost); 
-router.put('/:id/admin', updateBlogPost); 
-router.delete('/:id/admin', deleteBlogPost); 
+router.get('/myorders', getMyOrders); // GET /api/orders/myorders
+
+router.get('/', getAllOrders); // GET /api/orders (Admin)
+
+router.put('/:id/status', updateOrderStatus); 
 
 export default router;
