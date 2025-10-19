@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'; // Importación clave
 
 const CartPage: React.FC = () => {
     const { cartItems, totalPrice, cartCount, removeFromCart, increaseQuantity, decreaseQuantity, clearCart } = useCart();
-    const { user, isLoggedIn } = useAuth(); 
+    const { user } = useAuth(); 
     
     // Si la lista está vacía
     if (cartItems.length === 0) {
@@ -96,7 +96,7 @@ const CartPage: React.FC = () => {
                         {/* 🚨 CORRECCIÓN CLAVE: Solo mostrar si el usuario está logueado Y tiene el descuento */}
                         {user && user.hasDuocDiscount && (
                             <Alert variant="success" className="mt-3" style={{ backgroundColor: '#222', border: '1px solid #39FF14', color: 'white' }}>
-                                🎉 ¡Tu **20% de Descuento DUOCUC** se aplicará en el Checkout!
+                                🎉 ¡Tu 20% de Descuento DUOCUC se aplicará en el Checkout!
                             </Alert>
                         )}
                         

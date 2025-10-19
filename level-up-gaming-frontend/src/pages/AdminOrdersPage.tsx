@@ -211,10 +211,10 @@ const OrderDetailModal: React.FC<DetailModalProps> = ({ order, handleClose, upda
                 <Row>
                     <Col md={6}>
                         <h5 style={{ color: '#39FF14' }}>Información de Envío</h5>
-                        <p className="text-muted">**Destino:** {order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.region}</p>
-                        <p className="text-muted">**Método Pago:** {order.paymentMethod.toUpperCase()}</p>
-                        <p className="text-muted">**Fecha:** {new Date(order.createdAt).toLocaleString('es-CL')}</p>
-                        <p className="text-muted">**Estado:** <Badge bg={getStatusVariant(order.status as OrderStatus)}>{order.status.toUpperCase()}</Badge></p>
+                        <p className="text-muted">Destino: {order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.region}</p>
+                        <p className="text-muted">Método Pago: {order.paymentMethod.toUpperCase()}</p>
+                        <p className="text-muted">Fecha: {new Date(order.createdAt).toLocaleString('es-CL')}</p>
+                        <p className="text-muted">Estado: <Badge bg={getStatusVariant(order.status as OrderStatus)}>{order.status.toUpperCase()}</Badge></p>
                     </Col>
                     <Col md={6}>
                         <h5 style={{ color: '#39FF14' }}>Resumen de Pago</h5>

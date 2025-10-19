@@ -1,6 +1,6 @@
 // level-up-gaming-frontend/src/pages/RegisterPage.tsx
 
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert, Badge } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -97,7 +97,7 @@ const RegisterPage: React.FC = () => {
                 <Col xs={12} md={8}> 
                     <Card className="p-4" style={{ backgroundColor: '#111', border: '1px solid #39FF14' }}>
                         <h2 className="text-center mb-4" style={{ color: '#39FF14' }}>Registro de Cuenta</h2>
-                        <p className="text-center text-muted"><Badge bg="info" className="me-1">¡Regalo!</Badge> Obtienes **100 puntos** y código de referido.</p>
+                        <p className="text-center text-muted"><Badge bg="info" className="me-1">¡Regalo!</Badge> Obtienes 100 puntos y código de referido.</p>
                         
                         {error && <Alert variant="danger">{error}</Alert>}
 

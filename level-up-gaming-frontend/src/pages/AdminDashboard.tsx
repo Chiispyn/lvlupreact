@@ -1,7 +1,7 @@
 // level-up-gaming-frontend/src/pages/AdminDashboard.tsx (CÓDIGO COMPLETO)
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
 import { Users, Package, ShoppingCart, BookOpen, Settings, MapPin, Video, DollarSign, AlertTriangle } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';

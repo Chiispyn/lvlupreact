@@ -1,7 +1,7 @@
 // level-up-gaming-frontend/src/pages/HomePage.tsx
 
 import React, { useState, useEffect } from 'react'; 
-import { Container, Row, Col, Carousel, Button, Spinner, Alert, Card, Nav, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Alert, Card } from 'react-bootstrap';
 import ProductCard from '../components/ProductCard'; 
 import HeroSection from '../components/HeroSection';
 import { Product } from '../types/Product'; 

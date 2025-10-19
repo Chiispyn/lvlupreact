@@ -1,12 +1,12 @@
 // level-up-gaming-frontend/src/pages/CheckoutPage.tsx
 
-import React, { useState, FormEvent, useEffect } from 'react';
-import { Container, Row, Col, Button, Form, Card, ListGroup, Alert, Badge, Modal } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Button, Form, Card, ListGroup, Alert, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth, User as AuthUser } from '../context/AuthContext';
 import axios from 'axios';
-import { Truck, CreditCard, CheckCircle, Download, MapPin } from 'react-feather'; 
+import { Truck, CreditCard, CheckCircle, Download } from 'react-feather'; 
 
 // Definición de las interfaces (Necesarias para el tipado)
 interface ShippingAddress { street: string; city: string; region: string; zipCode?: string; }
@@ -250,7 +250,7 @@ const CheckoutPage: React.FC = () => {
         <Card className="p-5 text-center shadow-lg" style={{ backgroundColor: '#111', border: '2px solid #39FF14', color: 'white' }}>
             <CheckCircle size={80} color="#39FF14" className="mb-4 mx-auto"/>
             <h2 className="mb-3" style={{ color: '#39FF14' }}>¡Compra Finalizada con Éxito!</h2>
-            <p className="lead">Tu orden **#{orderId}** ha sido procesada.</p>
+            <p className="lead">Tu orden #{orderId} ha sido procesada.</p>
             <p className="text-muted">Revisa tu historial de órdenes para ver los detalles completos.</p>
             
             <div className="d-flex justify-content-center mt-4">
@@ -364,13 +364,13 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ show, handleClose, orderId,
             </Modal.Header>
             <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
                 <Alert variant="success" style={{ backgroundColor: '#333', border: '1px solid #39FF14', color: 'white' }}>
-                    **¡Pago Exitoso!** Este es tu comprobante de compra.
+                    ¡Pago Exitoso! Este es tu comprobante de compra.
                 </Alert>
                 
                 <h5 style={{ color: '#1E90FF' }}>Detalles de Envío</h5>
                 <p className="text-muted mb-3">
-                    **Orden #:** {orderId?.slice(0, 8)}... <br/>
-                    **Dirección:** {shippingAddress.street}, {shippingAddress.city}, {shippingAddress.region}
+                    Orden #: {orderId?.slice(0, 8)}... <br/>
+                    Dirección: {shippingAddress.street}, {shippingAddress.city}, {shippingAddress.region}
                 </p>
                 
                 <h5 style={{ color: '#1E90FF' }}>Productos</h5>

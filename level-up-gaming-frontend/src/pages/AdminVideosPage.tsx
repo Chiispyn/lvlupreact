@@ -216,7 +216,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, show, handleClose, fetch
                         <Form.Label>CÓDIGO DE INCRUSTACIÓN (Iframe Completo)</Form.Label>
                         <Form.Control as="textarea" rows={4} name="embedUrl" value={formData.embedUrl} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
                         <Form.Text className="text-muted">
-                            **Paso:** Ve a YouTube, haz clic en "Compartir" $\rightarrow$ "Insertar" $\rightarrow$ Copia el código completo.
+                            Paso: Ve a YouTube, haz clic en "Compartir" $\rightarrow$ "Insertar" $\rightarrow$ Copia el código completo.
                         </Form.Text>
                     </Form.Group>
                     

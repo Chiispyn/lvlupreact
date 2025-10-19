@@ -63,7 +63,7 @@ const ProfilePage: React.FC = () => {
                                 {/* CÓDIGO POSTAL ELIMINADO DE LA VISTA */}
                             </ListGroup>
                             
-                            {user.role === 'admin' && (<Alert variant="warning" className="mt-4">¡Eres **Administrador**! <Link to="/admin" style={{ color: 'black' }}>Accede al Panel</Link></Alert>)}
+                            {user.role === 'admin' && (<Alert variant="warning" className="mt-4">¡Eres Administrador! <Link to="/admin" style={{ color: 'black' }}>Accede al Panel</Link></Alert>)}
                         </Col>
                     </Row>
                 </Card.Body>
@@ -72,7 +72,7 @@ const ProfilePage: React.FC = () => {
             <Button variant="danger" onClick={logout}>Cerrar Sesión</Button>
             
             <Alert variant="secondary" className="mt-4">
-                **Nota:** El descuento **20% DUOCUC** se aplicará automáticamente en la fase de **Checkout**.
+                Nota: El descuento 20% DUOCUC se aplicará automáticamente en la fase de Checkout.
             </Alert>
 
             {/* Modal de Edición */}

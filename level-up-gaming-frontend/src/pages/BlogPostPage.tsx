@@ -56,7 +56,7 @@ const BlogPostPage: React.FC = () => {
 
             <h1 className="display-5 mb-3" style={{ color: '#39FF14' }}>{post.title}</h1>
             <div className="mb-4 text-muted">
-                Por **{post.author}** el {new Date(post.createdAt).toLocaleDateString()}
+                Por {post.author} el {new Date(post.createdAt).toLocaleDateString()}
             </div>
             
             <img 
