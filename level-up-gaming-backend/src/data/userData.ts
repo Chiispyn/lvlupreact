@@ -24,19 +24,31 @@ export interface User {
 }
 
 // 🚨 Lista inicial de usuarios (mutable para mocking)
-export let mockUsers: User[] = [
+// level-up-gaming-backend/src/data/userData.ts
+
+// ... (Interfaces existentes: User, ShippingAddress, etc.) ...
+
+export const mockUsers: User[] = [
     {
         id: 'u1',
         name: 'Administrador Principal',
         email: 'admin@levelup.com',
-        rut: '1-9', age: 30, password: 'admin123', role: 'admin', hasDuocDiscount: false, points: 100000, referralCode: 'ADMIN1000',
-        address: {
-            street: 'Av. Siempre Viva 742',
-            city: 'Springfield',
-            region: 'Metropolitana',
-            zipCode: '1234567', // Se mantiene aquí, pero el Frontend ya no lo envía
-        },
-        token: "MOCK_ADMIN_TOKEN_12345",
-        isActive: true
+        password: 'admin123',
+        rut: '123456789',
+        age: 35,
+        role: 'admin',
+        token: 'MOCK_ADMIN_TOKEN_123',
+        hasDuocDiscount: true,
+        points: 500,
+        referralCode: 'ADMIN1000',
+        isActive: true,
+        // 🚨 DIRECCIÓN CORREGIDA: Duoc UC Sede Concepción
+        address: { 
+            street: 'Paicaví 3280', 
+            city: 'Concepción', 
+            region: 'Biobío', 
+            zipCode: '4030000' 
+        }, 
     },
+    // ... (Otros usuarios si los tienes) ...
 ];

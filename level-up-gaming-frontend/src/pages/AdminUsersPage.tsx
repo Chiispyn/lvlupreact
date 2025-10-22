@@ -6,9 +6,6 @@ import { Edit, ArrowLeft, PlusCircle, AlertTriangle, UserX } from 'react-feather
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { User } from '../context/AuthContext'; 
-// 🚨 IMPORTACIÓN CRÍTICA DEL JSON LOCAL
-import CHILEAN_REGIONS_DATA from '../data/chile_regions.json';
-
 
 const API_URL = '/api/users';
 
@@ -35,6 +32,23 @@ const validateRut = (rutValue: string): boolean => {
 };
 
 
+// MOCK DATA JERÁRQUICO DE REGIONES CHILENAS (Local para Admin)
+interface ChileanRegion { region: string; provincias: { comunas: string[] }[]; numero_romano: string; }
+
+const CHILEAN_REGIONS_DATA: ChileanRegion[] = [
+    { region: 'Región Metropolitana de Santiago', provincias: [{ provincia: 'Santiago', comunas: ['Santiago', 'Providencia', 'Las Condes', 'Maipú', 'Puente Alto'] }], numero_romano: 'XIII' },
+    { region: 'Biobío', provincias: [{ provincia: 'Concepción', comunas: ['Concepción', 'Talcahuano', 'San Pedro de la Paz', 'Quillón'] }], numero_romano: 'VIII' },
+    { region: 'Valparaíso', provincias: [{ provincia: 'Valparaíso', comunas: ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana'] }], numero_romano: 'V' },
+    { region: 'Los Lagos', provincias: [{ provincia: 'Llanquihue', comunas: ['Puerto Montt', 'Osorno', 'Castro', 'Quellón'] }], numero_romano: 'X' },
+    { region: 'Tarapacá', provincias: [{ provincia: 'Iquique', comunas: ['Iquique', 'Alto Hospicio'] }], numero_romano: 'I' },
+    { region: 'Antofagasta', provincias: [{ provincia: 'Antofagasta', comunas: ['Antofagasta', 'Calama'] }], numero_romano: 'II' },
+];
+
+const getCommunesByRegionName = (regionName: string): string[] => {
+    const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === regionName);
+    if (!regionData) return [];
+    return regionData.provincias.flatMap((p: any) => p.comunas);
+};
 
 
 const AdminUsersPage: React.FC = () => {
@@ -230,27 +244,28 @@ interface ConfirmDeactivationModalProps { show: boolean; handleClose: () => void
 
 // Componente de Edición (UserEditModal)
 const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers, showStatus }) => {
+    // 🚨 NUEVO: Estado para la nueva contraseña
+    const [newPassword, setNewPassword] = useState('');
     const [formData, setFormData] = useState({
         name: user?.name || '', email: user?.email || '', role: user?.role || 'customer' as 'admin' | 'customer' | 'seller',
         rut: user?.rut || '', age: user?.age ? user.age.toString() : '0', street: user?.address?.street || '', city: user?.address?.city || '', region: user?.address?.region || '',
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); // 🚨 Estado para Comunas
+    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); 
 
 
     useEffect(() => {
         if (user) {
             setFormData({ name: user.name, email: user.email, role: user.role, rut: user.rut, age: user.age.toString(), street: user.address.street, city: user.address.city, region: user.address.region, });
+            setNewPassword(''); // Limpiar al abrir
             setError(null);
         }
     }, [user]);
     
-    // 🚨 EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
+    // EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
     useEffect(() => {
-        // 🚨 Buscar la región por nombre en la data local
         const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === formData.region);
-        // Recorrer las provincias y obtener todas las comunas
         const communes = regionData ? regionData.provincias.flatMap((p: any) => p.comunas) : [];
         setAvailableCommunes(communes);
         if (regionData && !communes.includes(formData.city)) {
@@ -262,8 +277,8 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
     if (!user) return null;
     const disableRoleChange = user.id === 'u1'; 
 
-    // CORRECCIÓN: Handler que extrae name/value del evento y actualiza (Versión estable)
-    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    // 🚨 CORRECCIÓN: Handler que extrae name/value del evento y actualiza (Versión estable)
+    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'rut' && value.length > 9) return;
         if (name === 'age' && parseInt(value) > 95) return;
@@ -272,10 +287,24 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault(); setLoading(true); setError(null);
+        
+        // VALIDACIÓN DE CONTRASEÑA NUEVA
+        if (newPassword && newPassword.length < 6) {
+            setError('La nueva contraseña debe tener al menos 6 caracteres.');
+            setLoading(false);
+            return;
+        }
+
         if (!validateRut(formData.rut)) { setError('El RUT ingresado es inválido.'); setLoading(false); return; }
         if (parseInt(formData.age) < 18 || parseInt(formData.age) > 95) { setError('La edad debe estar entre 18 y 95 años.'); setLoading(false); return; }
+        
         try {
-            const payload = { name: formData.name, email: formData.email, role: formData.role, rut: formData.rut, age: formData.age, address: { street: formData.street, city: formData.city, region: formData.region, zipCode: '', }};
+            const payload = { 
+                ...formData, 
+                age: formData.age, // Se envía como string para que el Backend lo parseé
+                address: { street: formData.street, city: formData.city, region: formData.region, zipCode: '', },
+                newPassword: newPassword || undefined, // 🚨 Solo enviamos la nueva contraseña si existe
+            };
             await axios.put(`${API_URL}/${user.id}/admin`, payload);
             fetchUsers(); handleClose(); showStatus(`Usuario ${user.name} actualizado con éxito.`, 'success');
         } catch (err: any) { setError(err.response?.data?.message || 'Fallo al actualizar el usuario.'); } finally { setLoading(false); }
@@ -289,6 +318,20 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
                     <h6 className="mb-3" style={{ color: '#39FF14' }}>Datos Principales</h6>
                     <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Nombre</Form.Label><Form.Control type="text" name="name" value={formData.name} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col></Row>
                     <Row><Col md={4}><Form.Group className="mb-3"><Form.Label>RUT</Form.Label><Form.Control type="text" name="rut" value={formData.rut} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={2}><Form.Group className="mb-3"><Form.Label>Edad</Form.Label><Form.Control type="number" name="age" value={formData.age} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Rol del Sistema</Form.Label><Form.Select name="role" value={formData.role} onChange={updateFormData} disabled={disableRoleChange} style={{ backgroundColor: '#333', color: 'white' }}><option value="customer">Cliente</option><option value="seller">Vendedor</option><option value="admin">Administrador</option></Form.Select>{disableRoleChange && <Form.Text className="text-danger">No puedes cambiar el rol del administrador principal.</Form.Text>}</Form.Group></Col></Row>
+                    
+                    {/* 🚨 CAMPO DE NUEVA CONTRASEÑA */}
+                    <Form.Group className="mb-4">
+                        <Form.Label style={{ color: '#FFC107' }}>Establecer Nueva Contraseña (Opcional)</Form.Label>
+                        <Form.Control 
+                            type="password" 
+                            placeholder="Mínimo 6 caracteres" 
+                            value={newPassword} 
+                            onChange={(e) => setNewPassword(e.target.value)} 
+                            style={{ backgroundColor: '#333', color: 'white' }}
+                        />
+                        <Form.Text className="text-muted">Dejar vacío para mantener la contraseña actual.</Form.Text>
+                    </Form.Group>
+                    
                     <h6 className="mb-3 mt-3" style={{ color: '#39FF14' }}>Dirección de Envío</h6>
                     <Form.Group className="mb-3"><Form.Label>Calle</Form.Label><Form.Control type="text" name="street" value={formData.street} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group>
                     <Row>
@@ -331,19 +374,18 @@ const UserCreateModal: React.FC<CreateModalProps> = ({ show, handleClose, fetchU
     // 🚨 EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
     useEffect(() => {
         const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === formData.region);
-        // Recorre las provincias y obtiene todas las comunas
         const communes = regionData ? regionData.provincias.flatMap((p: any) => p.comunas) : [];
         setAvailableCommunes(communes);
     }, [formData.region]);
 
 
     // 🚨 CORRECCIÓN: Handler que extrae name/value del evento y actualiza
-        const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-            const { name, value } = e.target;
-            if (name === 'rut' && value.length > 9) return;
-            if (name === 'age' && parseInt(value) > 95) return;
-            setFormData(prev => ({ ...prev, [name]: value }));
-        };
+    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        if (name === 'rut' && value.length > 9) return;
+        if (name === 'age' && parseInt(value) > 95) return;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault(); setLoading(true); setError(null);
