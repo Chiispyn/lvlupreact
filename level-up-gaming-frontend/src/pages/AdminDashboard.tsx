@@ -1,8 +1,8 @@
-// level-up-gaming-frontend/src/pages/AdminDashboard.tsx (CÓDIGO COMPLETO)
+// level-up-gaming-frontend/src/pages/AdminDashboard.tsx
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
-import { Users, Package, ShoppingCart, BookOpen, Settings, MapPin, Video, DollarSign, AlertTriangle } from 'react-feather'; 
+import { Users, Package, ShoppingCart, BookOpen, Settings, MapPin, Video, DollarSign, AlertTriangle, Award } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -32,6 +32,7 @@ const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
 const CRITICAL_STOCK_LEVEL = 5;
 
 
+// Componente para una tarjeta de acceso rápido
 const AdminCard: React.FC<{ title: string; icon: React.ReactNode; to: string }> = ({ title, icon, to }) => (
     <Col xs={12} md={6} lg={4} className="mb-4">
         <Card className="h-100 shadow-sm border-0 text-center" style={{ backgroundColor: '#111', border: '1px solid #1E90FF', color: 'white' }}>
@@ -56,7 +57,6 @@ const AdminDashboard: React.FC = () => {
     
     // Función para obtener todos los productos y verificar el stock
     const fetchStockStatus = async () => {
-        setLoadingStock(true);
         try {
             const { data } = await axios.get(API_URL_PRODUCTS); 
             
@@ -65,11 +65,11 @@ const AdminDashboard: React.FC = () => {
         } catch (error) {
             console.error("Fallo al verificar el stock.");
         } 
-        // 🚨 No ponemos finally para que el spinner de stock se vaya con el de órdenes
     };
 
-    // Función para calcular las ventas y estadísticas
+    // 🚨 FUNCIÓN RESTAURADA: Cálculo de Ventas y Estadísticas
     const fetchAnalytics = async () => {
+        setLoadingStock(true);
         try {
             const { data: allOrders } = await axios.get(API_URL_ORDERS); // GET /api/orders (todas las órdenes)
             
@@ -107,15 +107,16 @@ const AdminDashboard: React.FC = () => {
             setTopSellingProductName(topProduct);
 
         } catch (error) {
+            setTopSellingProductName('Error de carga');
             console.error("Fallo al cargar la analítica.");
         } finally {
-            setLoadingStock(false); // Usamos el mismo loading para simplificar
+            setLoadingStock(false); 
         }
     };
     
     useEffect(() => {
         fetchStockStatus();
-        fetchAnalytics();
+        fetchAnalytics(); // 🚨 Llamada a la analítica restaurada
     }, []);
 
 
@@ -134,7 +135,7 @@ const AdminDashboard: React.FC = () => {
                 </Alert>
             )}
 
-            {/* SECCIÓN DE DATOS ANALÍTICOS (BOLETÍN DINÁMICO) */}
+            {/* 🚨 SECCIÓN RESTAURADA: DATOS ANALÍTICOS (BOLETÍN DINÁMICO) */}
             <h2 className="mt-5 pt-3 border-top" style={{ color: '#39FF14' }}>Boletín de Ventas (Datos Reales)</h2>
             <Row className="mb-5">
                 <Col md={4} className="mb-3">
@@ -181,6 +182,7 @@ const AdminDashboard: React.FC = () => {
                 <AdminCard title="Gestión de Órdenes" icon={<ShoppingCart size={48} />} to="/admin/orders" />
                 <AdminCard title="Gestión de Usuarios" icon={<Users size={48} />} to="/admin/users" />
                 <AdminCard title="Gestión de Eventos" icon={<MapPin size={48} />} to="/admin/events" />
+                <AdminCard title="Gestión de Recompensas" icon={<Award size={48} />} to="/admin/rewards" />
                 <AdminCard title="Gestión de Blog/Noticias" icon={<BookOpen size={48} />} to="/admin/blog" />
                 <AdminCard title="Gestión de Videos" icon={<Video size={48} />} to="/admin/videos" />
             

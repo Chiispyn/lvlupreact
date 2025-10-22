@@ -1,4 +1,4 @@
-// level-up-gaming-backend/src/index.ts
+// level-up-gaming-backend/src/index.ts (CÓDIGO COMPLETO)
 
 import 'dotenv/config'; 
 import express, { Request, Response } from 'express';
@@ -9,14 +9,13 @@ import orderRoutes from './routes/orderRoutes';
 import blogRoutes from './routes/blogRoutes';
 import eventRoutes from './routes/eventRoutes'; 
 import videoRoutes from './routes/videoRoutes';
+import rewardRoutes from './routes/rewardRoutes';
 
 const PORT = process.env.PORT || 5000; 
 const app = express();
 
 // Middleware
 app.use(cors()); 
-
-// 🚨 CORRECCIÓN CRÍTICA: Aumentar el límite de tamaño del cuerpo JSON para aceptar Base64 (50MB)
 app.use(express.json({ limit: '50mb' })); 
 app.use(express.urlencoded({ limit: '50mb', extended: true })); 
 
@@ -30,9 +29,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes); 
 app.use('/api/blog', blogRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/videos', videoRoutes); // 🚨 Asegurar la importación correcta de videoRoutes
-
+app.use('/api/events', eventRoutes); 
+app.use('/api/videos', videoRoutes); // 🚨 La última línea que puede fallar
+app.use('/api/rewards', rewardRoutes); // 🚨 La última línea que puede fallar
 
 // Manejador de Errores
 app.use((err: any, req: Request, res: Response, next: any) => {

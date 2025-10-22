@@ -8,16 +8,23 @@ import { v4 as uuidv4 } from 'uuid';
 // LECTURA (GET)
 // ----------------------------------------------------
 
-// @route   GET /api/videos/featured (Para HomePage)
 const getFeaturedVideos = (req: Request, res: Response) => {
-    // Devuelve solo los marcados como destacados (máximo 2 para el home)
-    const featured = mockVideos.filter(v => v.isFeatured).slice(0, 2); 
-    res.json(featured);
+    try {
+        if (!mockVideos) { return res.status(200).json([]); }
+        const featured = mockVideos.filter(v => v.isFeatured).slice(0, 2); 
+        res.json(featured);
+    } catch (error) {
+        res.status(500).json({ message: 'Error interno del servidor al procesar videos destacados.' });
+    }
 };
 
-// @route   GET /api/videos (Para Admin)
 const getAllVideos = (req: Request, res: Response) => {
-    res.json(mockVideos);
+    try {
+        // 🚨 ESTA RUTA DEBE DEVOLVER EL ARRAY COMPLETO PARA EL ADMIN
+        res.json(mockVideos); 
+    } catch (error) {
+        res.status(500).json({ message: 'Error interno del servidor al procesar videos.' });
+    }
 };
 
 
@@ -25,7 +32,6 @@ const getAllVideos = (req: Request, res: Response) => {
 // ADMINISTRACIÓN (CRUD)
 // ----------------------------------------------------
 
-// @route   POST /api/videos/admin (Crear)
 const createVideo = (req: Request, res: Response) => {
     try {
         const { title, embedUrl, isFeatured } = req.body;
@@ -48,7 +54,6 @@ const createVideo = (req: Request, res: Response) => {
     }
 };
 
-// @route   PUT /api/videos/:id/admin (Actualizar)
 const updateVideo = (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -66,7 +71,6 @@ const updateVideo = (req: Request, res: Response) => {
     }
 };
 
-// @route   DELETE /api/videos/:id/admin (Eliminar)
 const deleteVideo = (req: Request, res: Response) => {
     const { id } = req.params;
     const initialLength = mockVideos.length;
@@ -80,4 +84,20 @@ const deleteVideo = (req: Request, res: Response) => {
     }
 };
 
-export { getFeaturedVideos, getAllVideos, createVideo, updateVideo, deleteVideo };
+const toggleVideoFeature = (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const videoIndex = mockVideos.findIndex(v => v.id === id);
+
+    if (videoIndex !== -1) {
+        // 🚨 Simulación: Invertir el estado 'isFeatured'
+        mockVideos[videoIndex].isFeatured = !mockVideos[videoIndex].isFeatured;
+        
+        // Devolvemos el objeto actualizado
+        res.json(mockVideos[videoIndex]);
+        return;
+    }
+    res.status(404).json({ message: 'Video no encontrado.' });
+};
+
+export { getFeaturedVideos, getAllVideos, createVideo, updateVideo, deleteVideo, toggleVideoFeature };

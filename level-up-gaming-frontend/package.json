@@ -12,6 +12,8 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@clregions/core": "^1.0.0",
+    "@clregions/data": "^1.0.0",
     "axios": "^1.12.2",
     "bootstrap": "^5.x.x",
     "file-base64": "^1.0.0",

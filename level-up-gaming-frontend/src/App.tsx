@@ -27,15 +27,17 @@ import ProfilePage from './pages/ProfilePage';
 import CheckoutPage from './pages/CheckoutPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 
-// 🚨 Componentes de Administración (Verificar importaciones)
+// 🚨 Componentes de Administración (Verificar importación)
 import AdminDashboard from './pages/AdminDashboard'; 
 import AdminProductsPage from './pages/AdminProductsPage'; 
 import AdminOrdersPage from './pages/AdminOrdersPage'; 
 import AdminUsersPage from './pages/AdminUsersPage'; 
 import AdminEventsPage from './pages/AdminEventsPage'; 
 import AdminBlogPage from './pages/AdminBlogPage'; 
-import AdminVideosPage from './pages/AdminVideosPage'; // 🚨 IMPORTACIÓN CRÍTICA
+import AdminVideosPage from './pages/AdminVideosPage'; 
+import AdminRewardsPage from './pages/AdminRewardsPage'; // 🚨 IMPORTACIÓN CRÍTICA
 import ProductDetailPage from './pages/ProductDetailPage';
+
 
 const App: React.FC = () => {
   return (
@@ -61,16 +63,13 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} /> 
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/producto/:id" element={<ProductDetailPage />} />
           
           {/* Rutas de Compra y Pedidos */}
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/myorders" element={<MyOrdersPage />} /> 
 
           {/* Ruta de detalle de producto (futura) */}
-          <Route path="/producto/:id" element={
-            <Container className="py-5"><h1>Detalle del Producto</h1></Container>
-          } />
+          <Route path="/producto/:id" element={<ProductDetailPage />} /> 
           
 
           {/* ============================================================== */}
@@ -83,8 +82,9 @@ const App: React.FC = () => {
               <Route path="users" element={<AdminUsersPage />} /> 
               <Route path="events" element={<AdminEventsPage />} /> 
               <Route path="blog" element={<AdminBlogPage />} /> 
+              <Route path="videos" element={<AdminVideosPage />} />
               
-              <Route path="videos" element={<AdminVideosPage />} /> {/* 🚨 RUTA CRÍTICA AÑADIDA */}
+              <Route path="rewards" element={<AdminRewardsPage />} /> {/* 🚨 RUTA CRÍTICA AÑADIDA */}
           </Route>
           
 

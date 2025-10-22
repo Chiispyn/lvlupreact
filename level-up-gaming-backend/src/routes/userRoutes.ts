@@ -9,7 +9,8 @@ import {
     getUsers, 
     createUser, 
     updateUserByAdmin, 
-    updatePoints // 🚨 Importación Correcta
+    updatePoints, // 🚨 Importación Correcta
+    toggleUserStatus
 } from '../controllers/userController'; 
 
 const router = express.Router();
@@ -26,5 +27,6 @@ router.put('/:id/admin', updateUserByAdmin);
 
 // 🚨 RUTA CRÍTICA: PUT /api/users/:id/points
 router.put('/:id/points', updatePoints); // ✅ Uso de la función updatePoints
+router.put('/:id/status', toggleUserStatus);
 
 export default router;

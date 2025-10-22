@@ -5,6 +5,7 @@ import { Container, Row, Col, Card, ListGroup, Badge, Spinner, Alert, Button } f
 import { Users, Trello, MapPin, Gift } from 'react-feather';
 import { mockLevels } from '../data/mockData'; 
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; 
 
 // Interfaces (deben coincidir con el Backend)
 interface Event {
@@ -18,7 +19,37 @@ interface Event {
 
 const API_URL = '/api/events';
 
+
+// ----------------------------------------------------
+// 🚨 COMPONENTE AUXILIAR: TARJETA DE NIVEL (LevelCard) - MOVIDO FUERA DEL SCOPE
+// ----------------------------------------------------
+const LevelCard: React.FC<{ level: typeof mockLevels[0] }> = ({ level }) => (
+    <Card className="h-100 shadow-sm border-primary" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
+        <Card.Header style={{ backgroundColor: 'var(--color-azul-electrico)', color: 'black', fontWeight: 'bold' }}>
+            <h5 className="mb-0" style={{ color: 'black' }}>{level.name}</h5>
+        </Card.Header>
+        <Card.Body>
+            <Card.Text style={{ color: 'var(--color-gris-claro)' }}>Puntos requeridos: <Badge bg="warning" text="dark">{level.minPoints}</Badge></Card.Text>
+            <h6>Beneficios:</h6>
+            <ListGroup variant="flush">
+                {level.benefits.map((benefit, index) => (
+                    <ListGroup.Item 
+                        key={index} 
+                        style={{ backgroundColor: 'transparent', color: 'var(--color-gris-claro)' }} 
+                        className="d-flex align-items-center"
+                    >
+                        <Gift size={16} className="me-2" color="var(--color-verde-neon)" /> {benefit}
+                    </ListGroup.Item>
+                ))}
+            </ListGroup>
+        </Card.Body>
+    </Card>
+);
+
+
 const CommunityPage: React.FC = () => {
+    const { user, isLoggedIn } = useAuth(); 
+    
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -40,47 +71,27 @@ const CommunityPage: React.FC = () => {
     }, []);
 
 
-    // 🚨 COMPONENTE LevelCard (CORREGIDO PARA MEJOR LEGIBILIDAD)
-    const LevelCard: React.FC<{ level: typeof mockLevels[0] }> = ({ level }) => (
-        // Usamos el color de fondo primario de la app (#111) y el borde azul
-        <Card className="h-100 shadow-sm" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
-            <Card.Header style={{ backgroundColor: 'var(--color-azul-electrico)', color: 'black', fontWeight: 'bold' }}>
-                <h5 className="mb-0" style={{ color: 'black' }}>{level.name}</h5> {/* Texto negro para contraste */}
-            </Card.Header>
-            <Card.Body>
-                <Card.Text style={{ color: 'var(--color-gris-claro)' }}>Puntos requeridos: <Badge bg="warning" text="dark">{level.minPoints}</Badge></Card.Text>
-                <h6>Beneficios:</h6>
-                <ListGroup variant="flush">
-                    {level.benefits.map((benefit, index) => (
-                        <ListGroup.Item 
-                            key={index} 
-                            style={{ backgroundColor: 'transparent', color: 'var(--color-gris-claro)' }} 
-                            className="d-flex align-items-center"
-                        >
-                            <Gift size={16} className="me-2" color="var(--color-verde-neon)" /> {benefit}
-                        </ListGroup.Item>
-                    ))}
-                </ListGroup>
-            </Card.Body>
-        </Card>
-    );
+    // Determinación del código de referido
+    const referralCode = isLoggedIn && user ? user.referralCode : 'Inicia sesión para ver tu código';
+
 
     return (
         <Container className="py-5">
             <h1 className="text-center mb-5 display-4" style={{ color: 'var(--color-azul-electrico)' }}>🎮 Comunidad Level-Up</h1>
 
-            {/* SECCIÓN: PROGRAMA DE REFERIDOS (Estático) */}
+            {/* SECCIÓN: PROGRAMA DE REFERIDOS (DINÁMICO) */}
             <Card className="mb-5 shadow" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-verde-neon)' }}>
                 <Card.Body>
                     <h2 className="border-bottom pb-2 mb-3" style={{ color: 'var(--color-verde-neon)' }}><Users className="me-2"/> Programa de Referidos</h2>
                     <p className="lead" style={{ color: 'var(--color-gris-claro)' }}>¡Gana puntos y sube de nivel compartiendo Level-Up Gaming!</p>
-                    <p style={{ color: 'var(--color-gris-claro)' }}>Tu código de referido actual: <Badge bg="info" className="p-2 fs-6">LEVELUP-XYZ123</Badge></p>
+                    <p style={{ color: 'var(--color-gris-claro)' }}>Tu código de referido actual: <Badge bg="info" className="p-2 fs-6">{referralCode}</Badge></p>
                 </Card.Body>
             </Card>
 
             {/* SECCIÓN: SISTEMA DE NIVELES */}
             <h2 className="text-center mb-4 border-bottom pb-2" style={{ color: 'var(--color-azul-electrico)' }}><Trello className="me-2"/> Sistema de Niveles (Loyalty)</h2>
             <Row xs={1} md={2} lg={4} className="g-4 mb-5">
+                {/* 🚨 LevelCard ahora es accesible */}
                 {mockLevels.map(level => (<Col key={level.id}><LevelCard level={level} /></Col>))}
             </Row>
 
@@ -100,7 +111,7 @@ const CommunityPage: React.FC = () => {
                             <Card className="h-100 shadow-sm" style={{ backgroundColor: '#222', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
                                 <Card.Body>
                                     <Card.Title style={{ color: 'var(--color-azul-electrico)' }}>{event.title}</Card.Title>
-                                    <Card.Subtitle className="mb-2 text-primary">🗓️ {new Date(event.date).toLocaleDateString()} a las {event.time} hrs</Card.Subtitle>
+                                    <Card.Subtitle className="mb-2 text-muted">🗓️ {new Date(event.date).toLocaleDateString()} a las {event.time} hrs</Card.Subtitle>
                                     <Card.Text style={{ color: 'var(--color-gris-claro)' }}><MapPin size={16} className="me-1"/> Ubicación: <strong>{event.location}</strong></Card.Text>
                                     
                                     {event.mapEmbed && ( 
@@ -110,7 +121,7 @@ const CommunityPage: React.FC = () => {
                                 
                                 {event.mapEmbed && (
                                     <div className="ratio ratio-16x9">
-                                        <iframe src={event.mapEmbed} style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`Mapa de ${event.title}`}></iframe>
+                                        <iframe src={event.mapEmbed} style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer" title={`Mapa de ${event.title}`}></iframe>
                                     </div>
                                 )}
                             </Card>

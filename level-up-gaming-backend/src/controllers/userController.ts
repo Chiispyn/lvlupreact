@@ -29,42 +29,41 @@ const authUser = (req: Request, res: Response) => {
 };
 
 // ----------------------------------------------------
-// LÓGICA DE REGISTRO DE CLIENTE (CON REFERIDO Y DESCUENTO)
+// LÓGICA DE REGISTRO DE CLIENTE
 // ----------------------------------------------------
 
 const registerUser = (req: Request, res: Response) => {
-    const { name, email, password, rut, age, address, referredBy } = req.body; 
+    const { name, email, password, rut, age, address, referredBy } = req.body;
 
     if (mockUsers.some(u => u.email === email)) {
         return res.status(400).json({ message: 'El correo ya está registrado.' });
     }
     
-    // 🚨 VERIFICACIÓN ESTRICTA DE DESCUENTO DUOCUC.CL
     const hasDuocDiscount = email.toLowerCase().endsWith('@duocuc.cl');
     
-    // 1. Puntos base
     let startingPoints = 100; 
     const referralCode = generateReferralCode(name); 
 
-    // 2. VERIFICACIÓN Y ASIGNACIÓN DE PUNTOS POR REFERIDO
     if (referredBy) {
         const referringUserIndex = mockUsers.findIndex(u => u.referralCode === referredBy);
         
         if (referringUserIndex !== -1) {
             startingPoints += 50;
-            mockUsers[referringUserIndex].points += 50; // Suma puntos al referente
+            mockUsers[referringUserIndex].points += 50; 
         }
     }
+
 
     if (!address || !address.street || !address.city || !address.region) {
         return res.status(400).json({ message: 'Faltan datos de dirección para el registro.' });
     }
 
     const newUser: User = {
-        id: uuidv4(), name: name, email: email, password: password, 
+        id: uuidv4(), name: name, email: email, password: password,
         rut: rut, age: parseInt(age), role: 'customer', token: `MOCK_CUSTOMER_TOKEN_${uuidv4().slice(0, 8)}`,
         hasDuocDiscount: hasDuocDiscount, points: startingPoints, referralCode: referralCode,
-        address: address, 
+        address: address,
+        isActive: true
     };
 
     mockUsers.push(newUser); 
@@ -112,12 +111,13 @@ const createUser = (req: Request, res: Response) => {
     }
 
     const newUser: User = {
-        id: uuidv4(), name: name, email: email, password: password, 
-        rut: rut || 'NO ASIGNADO', age: parseInt(age) || 0, 
+        id: uuidv4(), name: name, email: email, password: password,
+        rut: rut || 'NO ASIGNADO', age: parseInt(age) || 0,
         role: role, token: `MOCK_ADMIN_CREATED_${uuidv4().slice(0, 8)}`,
-        hasDuocDiscount: email.toLowerCase().endsWith('@duocuc.cl'), 
-        points: 0, referralCode: generateReferralCode(name), 
-        address: address || { street: 'N/A', city: 'N/A', region: 'N/A', zipCode: 'N/A' }, 
+        hasDuocDiscount: email.toLowerCase().endsWith('@duocuc.cl'),
+        points: 0, referralCode: generateReferralCode(name),
+        address: address || { street: 'N/A', city: 'N/A', region: 'N/A', zipCode: 'N/A' },
+        isActive: true
     };
 
     mockUsers.push(newUser); 
@@ -185,7 +185,32 @@ const updatePoints = (req: Request, res: Response) => {
 
     res.status(404).json({ message: 'Usuario no encontrado o cambio de puntos inválido.' });
 };
+const toggleUserStatus = (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { isActive } = req.body; // Recibe el nuevo estado (true/false)
+
+    const userIndex = mockUsers.findIndex(u => u.id === id);
+
+    if (userIndex !== -1) {
+        if (id === 'u1') {
+            return res.status(403).json({ message: 'No se puede desactivar al administrador principal.' });
+        }
+        
+        mockUsers[userIndex].isActive = isActive; // 🚨 CAMBIO DE ESTADO
+        
+        res.json(mockUsers[userIndex]);
+        return;
+    }
+    res.status(404).json({ message: 'Usuario no encontrado.' });
+};
+
+
+const deleteUser = (req: Request, res: Response) => {
+    // 🚨 Redireccionamos a la lógica de desactivación
+    req.body.isActive = false;
+    return toggleUserStatus(req, res);
+};
 
 
 // 🚨 EXPORTACIÓN FINAL COMPLETA DE TODAS LAS FUNCIONES
-export { authUser, registerUser, updateUserProfile, getUsers, createUser, updateUserByAdmin, updatePoints };
+export { authUser, registerUser, updateUserProfile, getUsers, createUser, updateUserByAdmin, updatePoints, toggleUserStatus, deleteUser };

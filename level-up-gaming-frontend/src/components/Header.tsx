@@ -49,7 +49,7 @@ const Header: React.FC = () => {
     );
 
     return (
-        <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
+        <Navbar bg="dark"  expand="lg" sticky="top">
             <Container>
                 {/* 🚨 USO DEL LOGO EN LA MARCA DEL SITIO */}
                 <Navbar.Brand as={Link} to="/" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>

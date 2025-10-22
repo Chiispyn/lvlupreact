@@ -4,15 +4,22 @@ import { type Request, type Response } from 'express';
 import { mockEvents, Event } from '../data/eventData'; 
 import { v4 as uuidv4 } from 'uuid';
 
+// 🚨 FUNCIÓN AUXILIAR: Extrae la URL de incrustación del iframe completo
+const extractEmbedSrc = (fullCode: string): string => {
+    // Busca el patrón src="[URL]"
+    const match = fullCode.match(/src="([^"]+)"/);
+    // Devuelve la URL limpia (el grupo de captura 1) o el string original si no encuentra el iframe.
+    return match ? match[1] : fullCode.includes('http') ? fullCode : ''; 
+};
+
+
 // ----------------------------------------------------
 // LECTURA (GET)
 // ----------------------------------------------------
 
 const getEvents = (req: Request, res: Response) => {
     try {
-        if (!mockEvents) {
-            return res.status(200).json([]);
-        }
+        if (!mockEvents) { return res.status(200).json([]); }
         
         const sortedEvents = mockEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         res.json(sortedEvents);
@@ -26,6 +33,7 @@ const getEvents = (req: Request, res: Response) => {
 // ADMINISTRACIÓN (CRUD)
 // ----------------------------------------------------
 
+// @route   POST /api/events/admin
 const createEvent = (req: Request, res: Response) => {
     try {
         const { title, date, time, location, mapEmbed } = req.body;
@@ -33,6 +41,9 @@ const createEvent = (req: Request, res: Response) => {
         if (!title || !date || !location) {
             return res.status(400).json({ message: 'Faltan campos obligatorios: título, fecha y ubicación.' });
         }
+        
+        // 🚨 CORRECCIÓN: Limpiamos el código antes de guardar
+        const finalEmbedUrl = extractEmbedSrc(mapEmbed);
 
         const newEvent: Event = {
             id: uuidv4(),
@@ -40,7 +51,7 @@ const createEvent = (req: Request, res: Response) => {
             date: date,
             time: time || '18:00', 
             location: location,
-            mapEmbed: mapEmbed || '', 
+            mapEmbed: finalEmbedUrl, // 🚨 Guardamos SOLO la URL limpia
         };
 
         mockEvents.push(newEvent);
@@ -51,18 +62,27 @@ const createEvent = (req: Request, res: Response) => {
     }
 };
 
+// @route   PUT /api/events/:id/admin
 const updateEvent = (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
         const eventIndex = mockEvents.findIndex(e => e.id === id);
-
+        
         if (eventIndex !== -1) {
             const currentEvent = mockEvents[eventIndex];
             
+            // 🚨 CORRECCIÓN: Limpiamos el código si se envió mapEmbed
+            if (updateData.mapEmbed) {
+                updateData.mapEmbed = extractEmbedSrc(updateData.mapEmbed);
+            }
+
             mockEvents[eventIndex] = { 
                 ...currentEvent, 
                 ...updateData,
+                date: updateData.date || currentEvent.date,
+                time: updateData.time || currentEvent.time,
+                // Aseguramos que mapEmbed se guarde limpio
                 mapEmbed: updateData.mapEmbed !== undefined ? updateData.mapEmbed : currentEvent.mapEmbed,
             };
             res.json(mockEvents[eventIndex]);
@@ -75,6 +95,7 @@ const updateEvent = (req: Request, res: Response) => {
     }
 };
 
+// @route   DELETE /api/events/:id/admin
 const deleteEvent = (req: Request, res: Response) => {
     const { id } = req.params;
     const initialLength = mockEvents.length;

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Button, Modal, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle } from 'react-feather';
+import { Edit, Trash, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-// Interface del Post (debe coincidir con el Backend)
+// Interfaces (deben coincidir con el Backend)
 interface BlogPost {
     id: string;
     title: string;
@@ -26,6 +26,10 @@ const AdminBlogPage: React.FC = () => {
     const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null); 
     const [showCreateModal, setShowCreateModal] = useState(false); 
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
+
+    // 🚨 ESTADOS PARA ELIMINACIÓN
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
 
 
     const fetchPosts = async () => {
@@ -50,15 +54,25 @@ const AdminBlogPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    const handleDelete = async (id: string, title: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar el post "${title}"?`)) {
-            try {
-                await axios.delete(`${API_URL}/${id}/admin`); 
-                setPosts(posts.filter(p => p.id !== id));
-                showStatus(`Post "${title}" eliminado con éxito.`, 'success');
-            } catch (err: any) {
-                showStatus('Fallo al eliminar el post.', 'danger');
-            }
+    // 🚨 FUNCIÓN: Abre el modal de confirmación
+    const confirmDelete = (id: string, name: string) => {
+        setItemToDelete({ id, name });
+        setShowDeleteModal(true);
+    };
+
+    // 🚨 FUNCIÓN: Ejecuta la eliminación (llamada desde el modal)
+    const handleDelete = async () => {
+        if (!itemToDelete) return;
+
+        try {
+            await axios.delete(`${API_URL}/${itemToDelete.id}/admin`); 
+            setPosts(posts.filter(p => p.id !== itemToDelete.id));
+            showStatus(`Post "${itemToDelete.name}" eliminado con éxito.`, 'success');
+        } catch (err: any) {
+            showStatus('Fallo al eliminar el post.', 'danger');
+        } finally {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
         }
     };
     
@@ -108,7 +122,7 @@ const AdminBlogPage: React.FC = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(post)}>
                                     <Edit size={14} /> Editar
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(post.id, post.title)}>
+                                <Button variant="danger" size="sm" onClick={() => confirmDelete(post.id, post.title)}>
                                     <Trash size={14} />
                                 </Button>
                             </td>
@@ -124,6 +138,14 @@ const AdminBlogPage: React.FC = () => {
                 handleClose={() => { setSelectedPost(null); setShowCreateModal(false); }}
                 fetchPosts={fetchPosts}
                 showStatus={showStatus}
+            />
+
+            {/* 🚨 MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+            <ConfirmDeleteModal 
+                show={showDeleteModal}
+                handleClose={() => setShowDeleteModal(false)}
+                handleDelete={handleDelete}
+                itemName={itemToDelete?.name || 'este artículo'}
             />
 
         </Container>
@@ -154,7 +176,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
         imageUrl: post?.imageUrl || '',
         author: post?.author || 'Admin',
     });
-    // Estados para la subida de archivos
+    // Estados para la subida de archivos (Base64)
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null); 
     const [loading, setLoading] = useState(false);
@@ -165,7 +187,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
             setFormData({ title: post.title, excerpt: post.excerpt, content: post.content, imageUrl: post.imageUrl, author: post.author });
             setPreviewUrl(post.imageUrl); // Inicializar preview con la URL existente
         } else {
-            setFormData({ title: '', excerpt: '', content: '', imageUrl: '', author: 'Admin' });
+            setFormData({ title: '', excerpt: '', content: '', imageUrl: 'https://via.placeholder.com/300x200/000000/FFFFFF?text=IMAGEN+FALTANTE', author: 'Admin' });
             setPreviewUrl(null);
         }
         setImageFile(null);
@@ -180,11 +202,19 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setImageFile(file);
-            setPreviewUrl(URL.createObjectURL(file)); // Crea una URL local para la previsualización
+            const reader = new FileReader();
+            
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                // GUARDA EL BASE64 DIRECTAMENTE EN imageUrl
+                setFormData(prev => ({ ...prev, imageUrl: base64String })); 
+                setPreviewUrl(base64String); 
+            };
+            reader.readAsDataURL(file);
+
         } else {
-            setImageFile(null);
-            setPreviewUrl(post?.imageUrl || null); 
+            setPreviewUrl(post?.imageUrl || null);
+            setFormData(prev => ({ ...prev, imageUrl: post?.imageUrl || '' }));
         }
     };
 
@@ -194,18 +224,13 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
         setLoading(true);
         setError(null);
         
-        // 🚨 CORRECCIÓN CLAVE: Usar 'any' en payload para permitir la bandera base64Image
         let payload: any = { ...formData }; 
-        
-        // LÓGICA DE MOCKING DE SUBIDA DE ARCHIVO
-        if (imageFile) {
-            payload = { ...payload, base64Image: 'SIMULATED_FILE_UPLOAD' };
-        } else if (!formData.imageUrl) {
-             setError('Debe proporcionar una imagen (URL o seleccionar un archivo).');
+
+        if (!payload.imageUrl) {
+             setError('Debe proporcionar una imagen.');
              setLoading(false);
              return;
         }
-
 
         const url = isEditing ? `${API_URL}/${post!.id}/admin` : `${API_URL}/admin`;
         const method = isEditing ? 'PUT' : 'POST';
@@ -255,7 +280,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
                             accept="image/*"
                         />
                         <Form.Text className="text-muted">
-                            Selecciona un archivo para previsualizar y simular la subida.
+                            Selecciona un archivo (se guardará como Base64).
                         </Form.Text>
                     </Form.Group>
                     
@@ -278,7 +303,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
                             name="imageUrl" 
                             value={formData.imageUrl} 
                             onChange={(e) => updateFormData(e.target.name, e.target.value)} 
-                            disabled={!!imageFile} // Deshabilitar si ya se seleccionó un archivo
+                            disabled={!!imageFile} 
                             style={{ backgroundColor: '#333', color: 'white' }}
                         />
                     </Form.Group>
@@ -297,6 +322,48 @@ const PostModal: React.FC<PostModalProps> = ({ post, show, handleClose, fetchPos
                     </Button>
                 </Form>
             </Modal.Body>
+        </Modal>
+    );
+};
+
+// ----------------------------------------------------
+// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+// ----------------------------------------------------
+
+interface ConfirmDeleteModalProps {
+    show: boolean;
+    handleClose: () => void;
+    handleDelete: () => void;
+    itemName: string;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
+                <Modal.Title style={{ color: '#FF4444' }}>
+                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
+                </Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
+                <p>
+                    ¿Estás seguro de que deseas eliminar a{' '}
+                    <strong style={{ color: '#39FF14' }}>{itemName}</strong>?
+                </p>
+                <Alert variant="warning" className="mt-3">
+                    Esta acción no se puede deshacer.
+                </Alert>
+            </Modal.Body>
+
+            <Modal.Footer style={{ backgroundColor: '#111' }}>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cancelar
+                </Button>
+                <Button variant="danger" onClick={handleDelete}>
+                    Eliminar
+                </Button>
+            </Modal.Footer>
         </Modal>
     );
 };

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, MapPin } from 'react-feather';
+import { Edit, Trash, ArrowLeft, PlusCircle, MapPin, AlertTriangle } from 'react-feather'; // 🚨 Importar AlertTriangle
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -18,6 +18,10 @@ interface Event {
 
 const API_URL = '/api/events';
 
+// ----------------------------------------------------
+// PÁGINA PRINCIPAL DE ADMINISTRACIÓN DE EVENTOS
+// ----------------------------------------------------
+
 const AdminEventsPage: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,6 +29,11 @@ const AdminEventsPage: React.FC = () => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null); 
     const [showCreateModal, setShowCreateModal] = useState(false); 
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
+    
+    // 🚨 ESTADOS PARA EL MODAL DE ELIMINACIÓN
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [eventToDelete, setEventToDelete] = useState<{ id: string, title: string } | null>(null);
+
 
     const fetchEvents = async () => {
         setLoading(true);
@@ -48,15 +57,26 @@ const AdminEventsPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    const handleDelete = async (id: string, title: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar el evento "${title}"?`)) {
-            try {
-                await axios.delete(`${API_URL}/${id}/admin`); 
-                setEvents(events.filter(e => e.id !== id));
-                showStatus(`Evento "${title}" eliminado con éxito.`, 'success');
-            } catch (err: any) {
-                showStatus('Fallo al eliminar el evento.', 'danger');
-            }
+    // 🚨 FUNCIÓN: Abre el modal de confirmación
+    const confirmDelete = (id: string, title: string) => {
+        setEventToDelete({ id, title });
+        setShowDeleteModal(true);
+    };
+
+    // 🚨 FUNCIÓN: Ejecuta la eliminación después de la confirmación del modal
+    const handleDelete = async () => {
+        if (!eventToDelete) return;
+        
+        try {
+            await axios.delete(`${API_URL}/${eventToDelete.id}/admin`); 
+            setEvents(events.filter(e => e.id !== eventToDelete.id));
+            showStatus(`Evento "${eventToDelete.title}" eliminado con éxito.`, 'success');
+            
+        } catch (err: any) {
+            showStatus('Fallo al eliminar el evento.', 'danger');
+        } finally {
+            setShowDeleteModal(false);
+            setEventToDelete(null);
         }
     };
     
@@ -109,7 +129,7 @@ const AdminEventsPage: React.FC = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(event)}>
                                     <Edit size={14} /> Editar
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(event.id, event.title)}>
+                                <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}>
                                     <Trash size={14} />
                                 </Button>
                             </td>
@@ -125,6 +145,14 @@ const AdminEventsPage: React.FC = () => {
                 handleClose={() => { setSelectedEvent(null); setShowCreateModal(false); }}
                 fetchEvents={fetchEvents}
                 showStatus={showStatus}
+            />
+            
+            {/* 🚨 NUEVO MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+            <ConfirmDeleteModal
+                show={showDeleteModal}
+                handleClose={() => setShowDeleteModal(false)}
+                handleDelete={handleDelete}
+                eventName={eventToDelete?.title || ''}
             />
         </Container>
     );
@@ -147,13 +175,18 @@ interface EventModalProps {
 
 const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetchEvents, showStatus }) => {
     const isEditing = !!event;
+    // Obtener la fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
+    // Obtener la fecha máxima permitida (ej. 1 año a partir de ahora)
+    const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10);
+
     // Inicialización del estado del formulario
     const [formData, setFormData] = useState({
         title: event?.title || '',
-        date: event?.date || new Date().toISOString().slice(0, 10), // Formato YYYY-MM-DD
+        date: event?.date || today, // Usar la fecha de hoy como default
         time: event?.time || '18:00',
         location: event?.location || '',
-        mapEmbed: event?.mapEmbed || '',
+        mapEmbed: event?.mapEmbed || '', // Almacena el código completo
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -162,7 +195,8 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
         if (event) {
             setFormData({ title: event.title, date: event.date, time: event.time, location: event.location, mapEmbed: event.mapEmbed });
         } else {
-            setFormData({ title: '', date: new Date().toISOString().slice(0, 10), time: '18:00', location: '', mapEmbed: '' });
+            // Resetear a valores iniciales (fecha de hoy)
+            setFormData({ title: '', date: today, time: '18:00', location: '', mapEmbed: '' });
         }
         setError(null);
     }, [event, show]);
@@ -171,26 +205,49 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // FUNCIÓN CRÍTICA: Extrae la URL de incrustación del iframe completo
+    const extractEmbedSrc = (fullCode: string): string => {
+        // Usa una expresión regular simple para encontrar el valor de src="..."
+        const match = fullCode.match(/src="([^"]+)"/);
+        // Si encuentra el src, devuelve la URL limpia, si no, devuelve el código si parece una URL, si no, vacío.
+        return match ? match[1] : fullCode.includes('http') ? fullCode : ''; 
+    };
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-
-        const url = isEditing ? `${API_URL}/${event!.id}/admin` : `${API_URL}/admin`;
-        const method = isEditing ? 'PUT' : 'POST';
         
-        // Validación básica de URL (si el campo no está vacío)
-        if (formData.mapEmbed && !formData.mapEmbed.includes('http')) {
-            setError('La URL del mapa debe ser un código de incrustación válido (empezar con http).');
+        const payload = { ...formData };
+        
+        // 1. Procesar el código que pegó el administrador (extraer solo la URL)
+        if (payload.mapEmbed.includes('<iframe') || payload.mapEmbed.includes('http')) {
+             payload.mapEmbed = extractEmbedSrc(payload.mapEmbed);
+        }
+        
+        // 2. VALIDACIÓN DE FECHA: No permitir fechas pasadas
+        if (new Date(formData.date) < new Date(today) && !isEditing) {
+            setError('No puedes agendar eventos en el pasado.');
             setLoading(false);
             return;
         }
+
+        // 3. Validación Final
+        if (payload.mapEmbed && !payload.mapEmbed.startsWith('http')) {
+             setError('La URL de incrustación es inválida. Debe ser una URL web (http/https).');
+             setLoading(false);
+             return;
+        }
+
+
+        const url = isEditing ? `${API_URL}/${event!.id}/admin` : `${API_URL}/admin`;
+        const method = isEditing ? 'PUT' : 'POST';
 
         try {
             await axios({
                 method: method,
                 url: url,
-                data: formData,
+                data: payload,
             });
             
             fetchEvents();
@@ -214,7 +271,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
-                        <Form.Label>Título del Evento</Form.Label>
+                        <Form.Label>Título</Form.Label>
                         <Form.Control type="text" name="title" value={formData.title} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
                     </Form.Group>
                     
@@ -222,7 +279,16 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                         <Col md={6}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Fecha</Form.Label>
-                                <Form.Control type="date" name="date" value={formData.date} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                                <Form.Control 
+                                    type="date" 
+                                    name="date" 
+                                    value={formData.date} 
+                                    onChange={(e) => updateFormData(e.target.name, e.target.value)} 
+                                    required 
+                                    min={today} // MÍNIMO HOY
+                                    max={maxDate} // MÁXIMO 1 AÑO
+                                    style={{ backgroundColor: '#333', color: 'white' }}
+                                />
                             </Form.Group>
                         </Col>
                         <Col md={6}>
@@ -239,7 +305,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                     </Form.Group>
                     
                     <Form.Group className="mb-3">
-                        <Form.Label>URL Embed de Mapa (Iframe - Opcional)</Form.Label>
+                        <Form.Label>URL Embed de Mapa (Iframe Completo)</Form.Label>
                         <Form.Control 
                             as="textarea" 
                             rows={3} 
@@ -249,7 +315,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                             style={{ backgroundColor: '#333', color: 'white' }}
                         />
                         <Form.Text className="text-muted">
-                            Si está vacío, no se mostrará mapa en la página de Comunidad.
+                            Paso: Pegue aquí el código iframe que Google Maps le proporciona. (Se guardará solo la URL del 'src').
                         </Form.Text>
                     </Form.Group>
                     
@@ -258,6 +324,49 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                     </Button>
                 </Form>
             </Modal.Body>
+        </Modal>
+    );
+};
+
+
+// ----------------------------------------------------
+// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+// ----------------------------------------------------
+
+interface ConfirmDeleteModalProps {
+    show: boolean;
+    handleClose: () => void;
+    handleDelete: () => void;
+    eventName: string;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, eventName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
+                <Modal.Title style={{ color: '#FF4444' }}>
+                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
+                </Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
+                <p>
+                    ¿Estás seguro de que deseas eliminar el evento{' '}
+                    <strong style={{ color: '#39FF14' }}>{eventName}</strong>?
+                </p>
+                <Alert variant="warning" className="mt-3">
+                    Esta acción no se puede deshacer.
+                </Alert>
+            </Modal.Body>
+
+            <Modal.Footer style={{ backgroundColor: '#111' }}>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cancelar
+                </Button>
+                <Button variant="danger" onClick={handleDelete}>
+                    Eliminar Evento
+                </Button>
+            </Modal.Footer>
         </Modal>
     );
 };

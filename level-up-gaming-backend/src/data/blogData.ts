@@ -27,7 +27,7 @@ export let mockBlogPosts: BlogPost[] = [
             <h4 class="mt-4" style="color: #1E90FF;">3. Elden Ring: Shadow of the Erdtree (Expansión)</h4>
             <p class="text-white">Aunque es una expansión, su tamaño y ambición superan a muchos juegos completos. FromSoftware ha prometido nuevos biomas, jefes de dificultad legendaria y una profundización en la historia que dejará a los fans sin aliento.</p>
             
-            <p class="mt-4">***
+            <p class="mt-4">
             <strong style="color: #39FF14;">Conclusión:</strong> El 2025 no es solo de secuelas; es de experiencias que exigen el máximo de tu hardware. ¡Prepara tus componentes!
             </p>
         `,
@@ -53,7 +53,7 @@ export let mockBlogPosts: BlogPost[] = [
             <h4 class="mt-4" style="color: #1E90FF;">Errores a Evitar y Consejos de Montaje</h4>
             <p class="text-white">El error más común es comprar la fuente de poder (PSU) más barata. Una PSU certificada (80+ Bronze, 550W) es vital para la estabilidad. Además, asegúrate de que tu gabinete tenga buen flujo de aire, ¡o tus componentes se freirán en verano!</p>
             
-            <p class="mt-4">***
+            <p class="mt-4">
             <strong style="color: #39FF14;">Consejo Final:</strong> Si tu presupuesto es estricto, prioriza la CPU y la RAM; siempre puedes mejorar la tarjeta gráfica más adelante.
             </p>
         `,
@@ -74,7 +74,7 @@ export let mockBlogPosts: BlogPost[] = [
             <h4 class="mt-4" style="color: #1E90FF;">Ventaja de Valor: Xbox Series X</h4>
             <p class="text-white">Xbox se enfoca en el valor a largo plazo gracias a su Game Pass, que incluye todos los juegos de Microsoft desde el día de lanzamiento. Para el jugador que quiere la biblioteca más grande sin gastar una fortuna, Xbox es el ganador indiscutible.</p>
             
-            <p class="mt-4">***
+            <p class="mt-4">
             <strong style="color: #39FF14;">Veredicto Final:</strong> Si tu foco es la narrativa cinematográfica y las innovaciones del control, elige PS5. Si priorizas la cantidad de juegos disponibles y el juego online con amigos, Xbox Series X es la mejor opción.
             </p>
         `,

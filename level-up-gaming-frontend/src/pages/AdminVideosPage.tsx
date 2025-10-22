@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Badge, Button, Modal, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, Video, Check, X } from 'react-feather';
+import { Edit, Trash, ArrowLeft, PlusCircle, Video, Check, X, AlertTriangle } from 'react-feather'; // 🚨 Importar AlertTriangle
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -23,6 +23,11 @@ const AdminVideosPage: React.FC = () => {
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null); 
     const [showCreateModal, setShowCreateModal] = useState(false); 
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
+    
+    // ESTADOS PARA ELIMINACIÓN
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
+
 
     const fetchVideos = async () => {
         setLoading(true);
@@ -46,16 +51,31 @@ const AdminVideosPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    const handleDelete = async (id: string, title: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar el video "${title}"?`)) {
-            try {
-                await axios.delete(`${API_URL}/${id}/admin`); 
-                setVideos(videos.filter(v => v.id !== id));
-                showStatus(`Video "${title}" eliminado con éxito.`, 'success');
-            } catch (err: any) {
-                showStatus('Fallo al eliminar el video.', 'danger');
-            }
+    // Función que abre el modal de confirmación de eliminación
+    const confirmDelete = (id: string, name: string) => {
+        setItemToDelete({ id, name });
+        setShowDeleteModal(true);
+    };
+
+    // Función que ejecuta la eliminación (llamada desde el modal)
+    const handleDelete = async () => {
+        if (!itemToDelete) return;
+        
+        try {
+            await axios.delete(`${API_URL}/${itemToDelete.id}/admin`); 
+            setVideos(videos.filter(v => v.id !== itemToDelete.id));
+            showStatus(`Video "${itemToDelete.name}" eliminado con éxito.`, 'success');
+            
+        } catch (err: any) {
+            showStatus('Fallo al eliminar el video.', 'danger');
+        } finally {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
         }
+    };
+    
+    const handleEdit = (event: Video) => {
+        setSelectedVideo(event);
     };
 
     if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
@@ -101,10 +121,10 @@ const AdminVideosPage: React.FC = () => {
                                 </Badge>
                             </td>
                             <td>
-                                <Button variant="info" size="sm" className="me-2" onClick={() => setSelectedVideo(video)}>
+                                <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(video)}>
                                     <Edit size={14} /> Editar
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(video.id, video.title)}>
+                                <Button variant="danger" size="sm" onClick={() => confirmDelete(video.id, video.title)}>
                                     <Trash size={14} />
                                 </Button>
                             </td>
@@ -119,6 +139,14 @@ const AdminVideosPage: React.FC = () => {
                 handleClose={() => { setSelectedVideo(null); setShowCreateModal(false); }}
                 fetchVideos={fetchVideos}
                 showStatus={showStatus}
+            />
+            
+            {/* 🚨 DEFINICIÓN DEL MODAL DE ELIMINACIÓN DE VIDEOS */}
+            <ConfirmDeleteModal 
+                show={showDeleteModal}
+                handleClose={() => setShowDeleteModal(false)}
+                handleDelete={handleDelete}
+                itemName={itemToDelete?.name || 'este video'}
             />
         </Container>
     );
@@ -143,7 +171,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, show, handleClose, fetch
     const isEditing = !!video;
     const [formData, setFormData] = useState({
         title: video?.title || '',
-        embedUrl: video?.embedUrl || '<iframe src="https://www.youtube.com/embed/"></iframe>',
+        embedUrl: video?.embedUrl || 'https://www.youtube.com/embed/VIDEO_ID_AQUÍ',
         isFeatured: video?.isFeatured || false,
     });
     const [loading, setLoading] = useState(false);
@@ -170,7 +198,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, show, handleClose, fetch
         const url = isEditing ? `${API_URL}/${video!.id}/admin` : `${API_URL}/admin`;
         const method = isEditing ? 'PUT' : 'POST';
         
-        // 🚨 VALIDACIÓN CLAVE: Asegurar que se pegó el IFRAME completo
+        // VALIDACIÓN CLAVE: Asegurar que se pegó el IFRAME completo
         if (!formData.embedUrl.includes('<iframe')) {
             setError('Debe pegar el código de incrustación completo (etiqueta <iframe>) de YouTube.');
             setLoading(false);
@@ -235,6 +263,49 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, show, handleClose, fetch
                     </Button>
                 </Form>
             </Modal.Body>
+        </Modal>
+    );
+};
+
+
+// ----------------------------------------------------
+// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+// ----------------------------------------------------
+
+interface ConfirmDeleteModalProps {
+    show: boolean;
+    handleClose: () => void;
+    handleDelete: () => void;
+    itemName: string;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
+                <Modal.Title style={{ color: '#FF4444' }}>
+                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
+                </Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
+                <p>
+                    ¿Estás seguro de que deseas eliminar a{' '}
+                    <strong style={{ color: '#39FF14' }}>{itemName}</strong>?
+                </p>
+                <Alert variant="warning" className="mt-3">
+                    Esta acción no se puede deshacer.
+                </Alert>
+            </Modal.Body>
+
+            <Modal.Footer style={{ backgroundColor: '#111' }}>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cancelar
+                </Button>
+                <Button variant="danger" onClick={handleDelete}>
+                    Eliminar
+                </Button>
+            </Modal.Footer>
         </Modal>
     );
 };

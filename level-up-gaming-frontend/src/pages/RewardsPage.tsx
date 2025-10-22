@@ -1,20 +1,28 @@
 // level-up-gaming-frontend/src/pages/RewardsPage.tsx
 
-import React, { useState } from 'react'; 
-import { Container, Card, Row, Col, Button, Badge, ProgressBar, Table, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react'; 
+import { Container, Card, Row, Col, Button, Badge, ProgressBar, Table, Alert, Spinner } from 'react-bootstrap'; // 🚨 Spinner y Alert añadidos
 import { Award, ShoppingBag, Percent } from 'react-feather';
-import { mockRewards, mockLevels } from '../data/mockData';
+import { mockLevels } from '../data/mockData'; // Solo necesitamos los niveles estáticos
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext'; 
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// ----------------------------------------------------
+// INTERFACES (Debe coincidir con la API de Recompensas)
+// ----------------------------------------------------
+interface Reward { id: string; type: 'Producto' | 'Descuento' | 'Envio'; name: string; pointsCost: number; description: string; isActive: boolean; season: string; imageUrl: string; }
+
+// Tipado para la función de carrito
+type ProductAddToCartFunction = (product: any, quantity?: number, isRedeemed?: boolean, pointsCost?: number) => void;
+
+const API_URL = '/api/rewards'; // Endpoint para recompensas activas
 
 
 // ----------------------------------------------------
 // COMPONENTE PARA CADA FILA DE RECOMPENSA (SIN CAMBIOS)
 // ----------------------------------------------------
-
-interface Reward { id: number; type: 'Producto' | 'Descuento'; name: string; pointsCost: number; description: string; }
-type ProductAddToCartFunction = (product: any, quantity?: number, isRedeemed?: boolean, pointsCost?: number) => void;
 
 const RewardRow: React.FC<{ reward: Reward; currentPoints: number; userId: string; showStatus: (msg: string, type: 'success' | 'danger') => void; updateContextUser: (user: any) => void; productAddToCart: ProductAddToCartFunction; }> = ({ reward, currentPoints, showStatus, productAddToCart }) => {
     
@@ -28,15 +36,17 @@ const RewardRow: React.FC<{ reward: Reward; currentPoints: number; userId: strin
         setLoading(true);
         try {
             
+            // 1. Simulación: Añadir el producto canjeado al carrito (sin restar puntos AÚN)
             const mockProduct = {
                 id: `reward-${reward.id}`, name: `[CANJE] ${reward.name}`, price: 0, 
-                imageUrl: 'https://picsum.photos/id/40/100/100', countInStock: 1, 
-                rating: 5, numReviews: 1, isTopSelling: false, description: reward.description
+                imageUrl: reward.imageUrl, // Usamos la URL real del reward
+                countInStock: 1, rating: 5, numReviews: 1, isTopSelling: false, description: reward.description
             };
             
             productAddToCart(mockProduct, 1, true, reward.pointsCost);
 
-            showStatus(`¡Canje Exitoso! ${reward.name} añadido al carrito.`, 'success');
+            // 2. NOTIFICACIÓN
+            showStatus(`¡${reward.name} añadido al carrito! Los puntos se descontarán al finalizar la compra.`, 'success');
 
         } catch (err: any) {
              showStatus('Error al añadir el canje al carrito.', 'danger');
@@ -50,7 +60,7 @@ const RewardRow: React.FC<{ reward: Reward; currentPoints: number; userId: strin
             <td className="align-middle">
                 {reward.type === 'Producto' ? <ShoppingBag size={20} className="me-2 text-info" /> : <Percent size={20} className="me-2 text-warning" />}
                 {reward.name}
-                <Badge bg={reward.type === 'Producto' ? 'info' : 'warning'} className="ms-2" pill>{reward.type}</Badge>
+                <Badge bg={reward.type === 'Producto' ? 'info' : reward.type === 'Envio' ? 'danger' : 'warning'} className="ms-2" pill>{reward.type}</Badge>
             </td>
             <td className="align-middle text-end">
                 <strong style={{ color: '#39FF14' }}>{reward.pointsCost} pts</strong>
@@ -71,7 +81,7 @@ const RewardRow: React.FC<{ reward: Reward; currentPoints: number; userId: strin
 
 
 // ----------------------------------------------------
-// PÁGINA PRINCIPAL (CORRECCIÓN DE PROGRESO)
+// PÁGINA PRINCIPAL (CARGA DINÁMICA DE RECOMPENSAS)
 // ----------------------------------------------------
 
 const RewardsPage: React.FC = () => {
@@ -79,6 +89,10 @@ const RewardsPage: React.FC = () => {
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
+    // 🚨 NUEVO ESTADO: Lista de recompensas cargadas de la API
+    const [rewardsList, setRewardsList] = useState<Reward[]>([]);
+    const [loadingRewards, setLoadingRewards] = useState(true);
+    
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
 
     // Redirigir si no está logueado
@@ -87,33 +101,43 @@ const RewardsPage: React.FC = () => {
         return null;
     }
     
+    // 🚨 FUNCIÓN: Fetch de las recompensas activas
+    const fetchRewards = async () => {
+        setLoadingRewards(true);
+        try {
+            const { data } = await axios.get(API_URL); // GET /api/rewards (solo activas)
+            setRewardsList(data);
+        } catch (err) {
+            console.error('Error al cargar recompensas:', err);
+        } finally {
+            setLoadingRewards(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRewards();
+    }, []);
+    
     const showStatus = (msg: string, type: 'success' | 'danger') => {
         setStatusMessage({ msg, type });
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    // 🚨 LÓGICA DINÁMICA DE NIVELES (CORREGIDA)
+    // 🚨 LÓGICA DINÁMICA DE NIVELES
     const currentPoints = user.points;
     const userId = user.id;
 
-    // 1. Encontrar todos los niveles que el usuario AÚN NO alcanza
-    const levelsAboveCurrent = mockLevels.filter(level => level.minPoints > currentPoints);
-    
-    // 2. Determinar el PRÓXIMO nivel objetivo (el que tiene el minPoints más bajo de los que no ha alcanzado)
-    const nextLevel = levelsAboveCurrent.length > 0 
-        ? levelsAboveCurrent.reduce((min, level) => level.minPoints < min.minPoints ? level : min)
-        : null; // Si no hay más niveles, es null
-
-    // 3. Determinar el nivel actual (el que tiene el minPoints más alto que el usuario ya alcanzó)
+    // Determinar el nivel actual y el próximo
     const currentLevel = mockLevels.filter(level => level.minPoints <= currentPoints)
-        .sort((a, b) => b.minPoints - a.minPoints)[0]; // Ordena descendente y toma el primero
+        .sort((a, b) => b.minPoints - a.minPoints)[0] || mockLevels[0];
 
-    const levelName = currentLevel ? currentLevel.name : 'Bronce (Nivel 1)';
+    const nextLevel = mockLevels.find(level => level.minPoints > currentPoints);
+
+    const levelName = currentLevel.name;
     const pointsNeeded = nextLevel ? nextLevel.minPoints - currentPoints : 0;
     
-    // Para la barra de progreso, usamos el umbral del nivel actual y el próximo.
     const basePoints = currentLevel ? currentLevel.minPoints : 0;
-    const range = nextLevel ? (nextLevel.minPoints - basePoints) : 1000; // Rango entre niveles
+    const range = nextLevel ? (nextLevel.minPoints - basePoints) : 1000;
     const progressValue = nextLevel ? currentPoints - basePoints : currentPoints;
     
     const progress = Math.min((progressValue / range) * 100, 100);
@@ -143,7 +167,7 @@ const RewardsPage: React.FC = () => {
                             {nextLevel ? (
                                 <>
                                     <p className="text-muted">
-                                        Acumula {pointsNeeded} puntos más para alcanzar el nivel {nextLevel.name.split(' ')[0]}.
+                                        Acumula {pointsNeeded} pts más para alcanzar el nivel {nextLevel.name.split(' ')[0]}.
                                     </p>
                                     <ProgressBar animated variant="warning" now={progress} label={`${Math.round(progress)}%`}/>
                                 </>
@@ -159,15 +183,17 @@ const RewardsPage: React.FC = () => {
             {/* SECCIÓN 2: OPCIONES DE CANJE */}
             <h2 className="text-center mb-4 border-bottom pb-2" style={{ color: '#1E90FF' }}>🎁 Canjea tus Puntos</h2>
             
-            {mockRewards.length === 0 ? (
-                <Alert variant="secondary" className="text-center">No hay recompensas disponibles en este momento.</Alert>
+            {loadingRewards ? (
+                <Container className="py-3 text-center"><Spinner animation="border" /></Container>
+            ) : rewardsList.length === 0 ? (
+                <Alert variant="secondary" className="text-center">No hay recompensas activas en este momento. El administrador debe activar promociones.</Alert>
             ) : (
                 <Table striped bordered hover responsive className="shadow-sm" style={{ backgroundColor: '#111', color: 'white' }}>
                     <thead>
                         <tr><th>Recompensa</th><th className="text-end">Costo en Puntos</th><th>Descripción</th><th className="text-center">Acción</th></tr>
                     </thead>
                     <tbody>
-                        {mockRewards.map((reward) => (
+                        {rewardsList.map((reward) => (
                             <RewardRow 
                                 key={reward.id} 
                                 reward={reward} 

@@ -1,8 +1,8 @@
-// level-up-gaming-frontend/src/pages/AdminProductsPage.tsx
+// level-up-gaming-frontend/src/pages/AdminProductsPage.tsx (CÓDIGO COMPLETO)
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle } from 'react-feather';
+import { Edit, Trash, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather'; // 🚨 Importar AlertTriangle
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Product } from '../types/Product';
@@ -10,6 +10,9 @@ import { Product } from '../types/Product';
 const API_URL = '/api/products';
 const CATEGORIES = ['Consolas', 'Juegos', 'Accesorios', 'Laptops', 'Computadores', 'Juegos de Mesa'];
 
+// ----------------------------------------------------
+// PÁGINA PRINCIPAL DE ADMINISTRACIÓN DE PRODUCTOS
+// ----------------------------------------------------
 
 const AdminProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -18,6 +21,11 @@ const AdminProductsPage: React.FC = () => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
+
+    // 🚨 ESTADOS PARA ELIMINACIÓN
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
+
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -41,15 +49,25 @@ const AdminProductsPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000);
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar el producto "${name}"?`)) {
-            try {
-                await axios.delete(`${API_URL}/${id}`);
-                setProducts(products.filter(p => p.id !== id));
-                showStatus(`Producto "${name}" eliminado con éxito.`, 'success');
-            } catch (err: any) {
-                showStatus('Fallo al eliminar el producto.', 'danger');
-            }
+    // 🚨 FUNCIÓN: Abre el modal de confirmación
+    const confirmDelete = (id: string, name: string) => {
+        setItemToDelete({ id, name });
+        setShowDeleteModal(true);
+    };
+
+    // 🚨 FUNCIÓN: Ejecuta la eliminación después de la confirmación del modal
+    const handleDelete = async () => {
+        if (!itemToDelete) return;
+        
+        try {
+            await axios.delete(`${API_URL}/${itemToDelete.id}`);
+            setProducts(products.filter(p => p.id !== itemToDelete.id));
+            showStatus(`Producto "${itemToDelete.name}" eliminado con éxito.`, 'success');
+        } catch (err: any) {
+            showStatus('Fallo al eliminar el producto.', 'danger');
+        } finally {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
         }
     };
 
@@ -99,7 +117,7 @@ const AdminProductsPage: React.FC = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => setSelectedProduct(product)}>
                                     <Edit size={14} />
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(product.id, product.name)}>
+                                <Button variant="danger" size="sm" onClick={() => confirmDelete(product.id, product.name)}>
                                     <Trash size={14} />
                                 </Button>
                             </td>
@@ -115,6 +133,14 @@ const AdminProductsPage: React.FC = () => {
                 currentProduct={selectedProduct}
                 fetchProducts={fetchProducts}
                 showStatus={showStatus}
+            />
+            
+            {/* 🚨 MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+            <ConfirmDeleteModal
+                show={showDeleteModal}
+                handleClose={() => setShowDeleteModal(false)}
+                handleDelete={handleDelete}
+                itemName={itemToDelete?.name || 'este producto'}
             />
         </Container>
     );
@@ -145,9 +171,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Inicializa o limpia estados al abrir/cerrar
         if (currentProduct) {
             setFormData(currentProduct);
-            setPreviewUrl(currentProduct.imageUrl); 
+            setPreviewUrl(currentProduct.imageUrl); // Usa la URL existente para edición
         } else {
             setFormData({
                 name: '', description: '', price: 0, imageUrl: '', specifications: '', category: 'Consolas', 
@@ -159,14 +186,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     }, [currentProduct, show]);
 
 
-    // FUNCIÓN DE UTILIDAD: Para actualizar el estado (Acepta solo enteros para precio/stock)
+    // FUNCIÓN DE UTILIDAD: Para actualizar el estado
     const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         
-        // 🚨 CORRECCIÓN: Para precio y stock, parsear a entero estricto
+        // 🚨 Validación estricta para Price y Stock (enteros positivos)
         if (name === 'price' || name === 'countInStock') {
             const integerValue = parseInt(value);
-            // Si el input no es un número válido o es un decimal, solo actualiza si el valor es vacío o un entero
             if (value === '' || !isNaN(integerValue)) {
                 setFormData((prev: any) => ({ ...prev, [name]: integerValue }));
             }
@@ -188,7 +214,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
             reader.onloadend = () => {
                 const base64String = reader.result as string;
                 setFormData((prev: any) => ({ ...prev, imageUrl: base64String })); 
-                setPreviewUrl(base64String); 
+                setPreviewUrl(base64String); // Muestra la imagen Base64 localmente
             };
             reader.readAsDataURL(file);
 
@@ -207,7 +233,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
         const price = formData.price;
         const stock = formData.countInStock;
 
-        // 🚨 VALIDACIONES CRÍTICAS DE PRECIO Y STOCK
+        // 🚨 VALIDACIONES CRÍTICAS DE STOCK Y PRECIO
         if (price === null || price < 1 || isNaN(price) || !Number.isInteger(price)) {
             setError('El precio debe ser un número entero y positivo (CLP).');
             setLoading(false);
@@ -224,7 +250,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
 
         let payload: any = { ...formData };
 
-        // --- VALIDACIÓN FINAL Y LIMPIEZA ---
+        // --- VALIDACIÓN FINAL ---
         if (!payload.imageUrl) {
             setError('Debe proporcionar una imagen.');
             setLoading(false);
@@ -313,7 +339,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                                     value={formData.price ?? 0} 
                                     onChange={updateFormData} 
                                     required 
-                                    step="1" // 🚨 CLAVE: Solo permite enteros en el UI
+                                    step="1" // Solo permite enteros en el UI
                                     min="1"
                                     style={{ backgroundColor: '#333', color: 'white' }} 
                                 />
@@ -328,7 +354,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                                     value={formData.countInStock ?? 0} 
                                     onChange={updateFormData} 
                                     required 
-                                    step="1" // 🚨 CLAVE: Solo permite enteros en el UI
+                                    step="1" // Solo permite enteros en el UI
                                     min="0"
                                     style={{ backgroundColor: '#333', color: 'white' }} 
                                 />
@@ -379,6 +405,49 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                     </Button>
                 </Form>
             </Modal.Body>
+        </Modal>
+    );
+};
+
+
+// ----------------------------------------------------
+// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+// ----------------------------------------------------
+
+interface ConfirmDeleteModalProps {
+    show: boolean;
+    handleClose: () => void;
+    handleDelete: () => void;
+    itemName: string;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
+                <Modal.Title style={{ color: '#FF4444' }}>
+                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
+                </Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
+                <p>
+                    ¿Estás seguro de que deseas eliminar a{' '}
+                    <strong style={{ color: '#39FF14' }}>{itemName}</strong>?
+                </p>
+                <Alert variant="warning" className="mt-3">
+                    Esta acción no se puede deshacer.
+                </Alert>
+            </Modal.Body>
+
+            <Modal.Footer style={{ backgroundColor: '#111' }}>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cancelar
+                </Button>
+                <Button variant="danger" onClick={handleDelete}>
+                    Eliminar
+                </Button>
+            </Modal.Footer>
         </Modal>
     );
 };

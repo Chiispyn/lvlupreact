@@ -7,12 +7,13 @@
   /* Colores Base */
   --color-negro: #000000;
   --color-blanco: #FFFFFF;
-  --color-gris-claro: #AAAAAA; /* 🚨 CORRECCIÓN: Usar un gris más claro para el texto secundario */
+  --color-gris-claro: #AAAAAA; 
   
   /* Colores de Acento */
-  --color-azul-electrico: #1E90FF; /* Usado para Headers, Títulos principales */
-  --color-verde-neon: #39FF14;     /* Usado para Botones de Éxito, Acentos de precio */
-  --color-fondo-secundario: #222222; /* Fondo de Cards/Modals */
+  --color-azul-electrico: #1E90FF; 
+  --color-verde-neon: #39FF14;     
+  --color-fondo-secundario: #222222; 
+  --color-peligro-neon: #FF4444;    
   
   /* Tipografía */
   --font-principal: 'Roboto', sans-serif;
@@ -30,24 +31,17 @@ body {
   margin: 0; 
 }
 
-/* Encabezados y Acentos */
-h1, h2, h3, h4, h5, h6 {
-  /* El color del encabezado lo hereda del acento azul */
-  color: var(--color-azul-electrico); 
-  font-family: var(--font-encabezado);
-}
-
-/* 🚨 CORRECCIÓN CLAVE: Texto Secundario (Opiniones, Resúmenes, Ayudas en Formulario) */
-.text-muted {
-    /* Usar el gris más claro para el contraste */
-    color: var(--color-gris-claro) !important;
-}
-
-/* Header en Dark Mode */
+/* Header en Dark Mode (Fondo Negro, Texto Blanco) */
 .navbar.bg-dark {
     background-color: var(--color-negro) !important;
     border-bottom: 2px solid var(--color-azul-electrico); 
 }
+/* Asegurar que el texto del nav sea blanco en Dark Mode */
+.navbar.bg-dark .navbar-brand,
+.navbar.bg-dark .nav-link {
+    color: var(--color-blanco) !important;
+}
+
 
 /* Footer en Dark Mode */
 footer {
@@ -55,7 +49,14 @@ footer {
     border-top-color: var(--color-azul-electrico) !important;
 }
 
-/* Botones de Éxito (Neon) */
+/* Encabezados y Texto Secundario (Dark Mode) */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-azul-electrico); 
+  font-family: var(--font-encabezado);
+}
+.text-muted {
+    color: var(--color-gris-claro) !important;
+}
 .btn-success {
     background-color: var(--color-verde-neon);
     border-color: var(--color-verde-neon);
@@ -63,30 +64,18 @@ footer {
     font-weight: bold;
 }
 
+
 /* ------------------------------------
    3. LÓGICA DE MODO CLARO (LIGHT MODE)
-   (Estos estilos se aplican solo si el sistema operativo está en modo claro)
 ------------------------------------ */
 
 @media (prefers-color-scheme: light) {
     body {
-        background-color: #F8F8F8; 
+        background-color: #F8F8F8;
         color: #333333; /* Texto principal oscuro */
     }
     
-    /* Hero Section en Light Mode */
-    .hero-section {
-        background-color: #FFFFFF !important; 
-        border-bottom-color: #007bff !important;
-    }
-    .hero-section h1 {
-        color: #007bff !important; 
-    }
-    .hero-section p {
-        color: #333333 !important; 
-    }
-
-    /* Header en Light Mode (Invertir Colores) */
+    /* 🚨 CORRECCIÓN HEADER LIGHT MODE */
     .navbar.bg-dark {
         background-color: #FFFFFF !important;
         border-bottom: 1px solid #CCCCCC !important;
@@ -94,9 +83,10 @@ footer {
     .navbar.bg-dark .navbar-brand,
     .navbar.bg-dark .nav-link,
     .navbar.bg-dark .btn-outline-primary {
-        color: #333333 !important;
+        color: #333333 !important; /* 🚨 Texto oscuro */
     }
-    
+
+
     /* Footer en Light Mode */
     footer {
         background-color: #EEEEEE !important;
@@ -111,29 +101,31 @@ footer {
     }
 
 
-    /* Encabezados y Acentos Invertidos */
+    /* Encabezados y Tarjetas en Light Mode */
     h1, h2, h3, h4, h5, h6 {
         color: #007bff; /* Azul estándar */
     }
-
-    /* Texto secundario en modo claro (más oscuro) */
     .text-muted {
-        color: #666666 !important; 
+        color: #666666 !important;
     }
     
-    /* Botones de Éxito (Se ajustan para ser visibles) */
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white !important; 
-    }
-    
-    /* Tarjetas/Modals en Light Mode */
     .card,
     .modal-content,
     .alert {
         background-color: #FFFFFF !important;
         border-color: #DDDDDD !important;
+        color: #333333 !important;
+    }
+
+    /* Hero Section en Light Mode */
+    .hero-section {
+        background-color: #FFFFFF !important; 
+        border-bottom-color: #007bff !important;
+    }
+    .hero-section h1 {
+        color: #007bff !important;
+    }
+    .hero-section p {
         color: #333333 !important;
     }
 }

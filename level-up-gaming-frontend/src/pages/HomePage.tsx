@@ -18,10 +18,18 @@ interface VideoItem {
 }
 
 
-// 🚨 COMPONENTE NewsCard MEJORADO CON IMAGEN
+// 🚨 COMPONENTE NewsCard CORREGIDO (Permite que el texto se adapte al tema)
 const NewsCard: React.FC<{ post: BlogPost }> = ({ post }) => (
-    <Card className="h-100 shadow-sm" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
-        {/* 🚨 IMAGEN AÑADIDA */}
+    <Card 
+        className="h-100 shadow-sm" 
+        // 🚨 APLICAMOS ESTILOS INICIALES DEL TEMA OSCURO
+        style={{ 
+            backgroundColor: 'var(--color-fondo-secundario)', // Usamos el color de card
+            color: 'var(--color-blanco)', // Texto principal en blanco
+            border: '1px solid var(--color-azul-electrico)' 
+        }}
+    >
+        {/* IMAGEN AÑADIDA */}
         <Card.Img 
             variant="top" 
             src={post.imageUrl} 
@@ -30,10 +38,14 @@ const NewsCard: React.FC<{ post: BlogPost }> = ({ post }) => (
         />
         
         <Card.Body>
+            {/* 🚨 TITULO: Color verde neón en Dark Mode (se invierte por el CSS global) */}
             <Card.Title style={{ color: 'var(--color-verde-neon)' }}>
                 <Link to={`/blog/${post.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{post.title}</Link>
             </Card.Title>
-            <Card.Text style={{ color: 'white' }}>{post.excerpt}</Card.Text>
+            
+            {/* 🚨 CORRECCIÓN: El color de texto principal se hereda de la Card.Body o del CSS global de .card-text 
+               NO usamos style={{ color: 'white' }} aquí para que el CSS en Light Mode pueda cambiarlo a negro. */}
+            <Card.Text className="text-muted">{post.excerpt}</Card.Text>
         </Card.Body>
     </Card>
 );
@@ -92,7 +104,6 @@ const HomePage: React.FC = () => {
 
     return (
         <>
-            {/* 1. HERO SECTION */}
             <HeroSection />
             
             <Container className="py-5">

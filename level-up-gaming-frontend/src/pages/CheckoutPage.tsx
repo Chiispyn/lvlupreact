@@ -7,25 +7,60 @@ import { useCart } from '../context/CartContext';
 import { useAuth, User as AuthUser } from '../context/AuthContext';
 import axios from 'axios';
 import { Truck, CreditCard, CheckCircle, Download } from 'react-feather'; 
+// 🚨 IMPORTACIÓN CRÍTICA DEL JSON LOCAL
+import CHILEAN_REGIONS_DATA from '../data/chile_regions.json';
+
 
 // Definición de las interfaces (Necesarias para el tipado)
 interface ShippingAddress { street: string; city: string; region: string; zipCode?: string; }
-interface CartItem { product: { name: string; price: number }; quantity: number; }
+interface CartItem { product: { name: string; price: number }; quantity: number; isRedeemed?: boolean; pointsCost?: number; }
 interface Order { id: string; userId: string; items: CartItem[]; shippingAddress: ShippingAddress; paymentMethod: 'webpay' | 'transferencia' | 'efectivo'; totalPrice: number; shippingPrice: number; isPaid: boolean; status: string; createdAt: string; }
 
-// 🚨 CONSTANTES GLOBALES (Necesarias para el formato CLP y lógica de puntos)
+// CONSTANTES GLOBALES
 const CLP_FORMATTER = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
 const formatClp = (amount: number) => CLP_FORMATTER.format(amount);
 const FREE_SHIPPING_THRESHOLD_CLP = 100000;
 const POINTS_RATE = 1000; // 10 puntos por cada 1000 CLP gastados
+const COUPON_MONETARY_VALUE = 5000; // Valor del cupón 102
+const COUPON_PERCENT_RATE = 0.15; // Valor del cupón 106 (15%)
+
+
+// 🚨 FUNCIÓN CRÍTICA: LÓGICA DE ENVÍO POR REGIÓN (Simulación)
+const getShippingCost = (region: string, isFree: boolean): number => {
+    if (isFree) return 0;
+    
+    const lowerRegion = region.toLowerCase();
+    
+    // Simulación de costos fijos usando nombres clave de región
+    if (lowerRegion.includes('metropolitana') || lowerRegion.includes('santiago')) {
+        return 5000; // RM: Más barato
+    } 
+    // Biobío o zonas extremas simuladas
+    if (lowerRegion.includes('biobío') || lowerRegion.includes('araucanía') || lowerRegion.includes('magallanes') || lowerRegion.includes('los lagos')) {
+        return 10000; // Zonas más costosas
+    }
+    // Resto del país
+    return 7500;
+};
+
 
 // ----------------------------------------------------
 // COMPONENTE: RESUMEN DE LA ORDEN (AUXILIAR)
 // ----------------------------------------------------
 
-interface SummaryProps { subtotal: number; shippingPrice: number; discount: number; discountRate: number; totalOrder: number; user: AuthUser | null; }
+interface SummaryProps { 
+    subtotal: number; 
+    shippingPrice: number; 
+    discountDuoc: number; 
+    discountCouponValue: number; 
+    discountPercentValue: number;
+    totalPointsRedeemed: number; 
+    discountRate: number; 
+    totalOrder: number; 
+    user: AuthUser | null; 
+}
 
-const OrderSummary: React.FC<SummaryProps> = ({ subtotal, shippingPrice, discount, discountRate, totalOrder, user }) => {
+const OrderSummary: React.FC<SummaryProps> = ({ subtotal, shippingPrice, discountDuoc, discountCouponValue, discountPercentValue, totalPointsRedeemed, discountRate, totalOrder, user }) => {
     const pointsEarned = Math.floor(subtotal / POINTS_RATE) * 10;
     
     return (
@@ -36,19 +71,45 @@ const OrderSummary: React.FC<SummaryProps> = ({ subtotal, shippingPrice, discoun
                     <span>Subtotal Artículos:</span>
                     <span>{formatClp(subtotal)}</span>
                 </ListGroup.Item>
+                
+                {/* 1. Descuento DUOCUC (Si aplica) */}
+                {discountDuoc > 0 && discountRate > 0 && (
+                    <ListGroup.Item className="d-flex justify-content-between fw-bold" style={{ backgroundColor: 'transparent', borderBottomColor: '#333', color: '#39FF14' }}>
+                        <span>Descuento DUOCUC ({discountRate * 100}%):</span>
+                        <span>-{formatClp(discountDuoc)}</span>
+                    </ListGroup.Item>
+                )}
+                
+                {/* 2. Descuento de CUPÓN 15% */}
+                 {discountPercentValue > 0 && (
+                    <ListGroup.Item className="d-flex justify-content-between fw-bold" style={{ backgroundColor: 'transparent', borderBottomColor: '#333', color: '#39FF14' }}>
+                        <span>Cupón 15% OFF:</span>
+                        <span>-{formatClp(discountPercentValue)}</span>
+                    </ListGroup.Item>
+                )}
+                
+                {/* 3. Descuento de CUPONES CANJEADOS (Valor Monetario) */}
+                {discountCouponValue > 0 && (
+                    <ListGroup.Item className="d-flex justify-content-between fw-bold" style={{ backgroundColor: 'transparent', borderBottomColor: '#333', color: '#39FF14' }}>
+                        <span>Cupón Descuento Fijo:</span>
+                        <span>-{formatClp(discountCouponValue)}</span>
+                    </ListGroup.Item>
+                )}
+                
+                {/* Puntos a restar (para el resumen) */}
+                {totalPointsRedeemed > 0 && (
+                    <ListGroup.Item className="d-flex justify-content-between fw-bold" style={{ backgroundColor: 'transparent', borderBottomColor: '#333', color: '#FFC107' }}>
+                        <span>Puntos a Canjear:</span>
+                        <span>{totalPointsRedeemed} pts</span>
+                    </ListGroup.Item>
+                )}
+                
                 <ListGroup.Item className="d-flex justify-content-between" style={{ backgroundColor: 'transparent', borderBottomColor: '#333' }}>
                     <span>Envío Estimado:</span>
                     <span style={{ color: shippingPrice === 0 ? 'yellow' : 'white' }}>
                         {shippingPrice === 0 ? 'GRATIS' : formatClp(shippingPrice)}
                     </span>
                 </ListGroup.Item>
-                
-                {discount > 0 && (
-                    <ListGroup.Item className="d-flex justify-content-between fw-bold" style={{ backgroundColor: 'transparent', borderBottomColor: '#333', color: '#39FF14' }}>
-                        <span>Descuento DUOCUC ({discountRate * 100}%):</span>
-                        <span>-{formatClp(discount)}</span>
-                    </ListGroup.Item>
-                )}
                 
                 <ListGroup.Item className="d-flex justify-content-between fw-bold mt-3" style={{ backgroundColor: 'transparent', borderTop: '2px solid #1E90FF', color: 'white' }}>
                     <span>Total Final:</span>
@@ -76,13 +137,19 @@ const CheckoutPage: React.FC = () => {
     const { user, isLoggedIn, setUserFromRegistration } = useAuth();
 
     const [step, setStep] = useState(1);
+    const [useRegisteredAddress, setUseRegisteredAddress] = useState(true); 
     const [shippingAddress, setShippingAddress] = useState<ShippingAddress>(user?.address || { street: '', city: '', region: '' });
+    const [shippingNotes, setShippingNotes] = useState(''); 
     const [paymentMethod, setPaymentMethod] = useState<'webpay' | 'transferencia' | 'efectivo'>('webpay');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
     
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    
+    // 🚨 ESTADO PARA LAS COMUNAS DISPONIBLES EN EL SELECT
+    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]);
+
 
     // Redirigir si el carrito está vacío o no está logueado
     useEffect(() => {
@@ -91,17 +158,81 @@ const CheckoutPage: React.FC = () => {
     }, [cartItems, isLoggedIn, navigate]);
 
 
-    // CALCULAR COSTOS
-    const subtotal = totalPrice;
-    const shippingCostBase = 5000;
-    const shippingPrice = subtotal >= FREE_SHIPPING_THRESHOLD_CLP ? 0 : shippingCostBase; 
-    
-    const discountRate = user?.hasDuocDiscount ? 0.20 : 0; 
-    const discount = subtotal * discountRate;
-    
-    const totalOrder = subtotal + shippingPrice - discount;
-    const pointsEarned = Math.floor(subtotal / POINTS_RATE) * 10; 
+    // 🚨 EFECTO PARA SINCRONIZAR LA DIRECCIÓN REGISTRADA Y LAS COMUNAS
+    useEffect(() => {
+        const currentRegionName = shippingAddress.region;
+        
+        // 1. Encontrar el objeto de la región en el JSON
+        const selectedRegionData = CHILEAN_REGIONS_DATA.find((reg: any) => reg.region === currentRegionName);
+        
+        // 2. Obtener las comunas de esa región (flat map recorre las provincias)
+        const communes = selectedRegionData 
+            ? selectedRegionData.provincias.flatMap((p: any) => p.comunas)
+            : [];
+        setAvailableCommunes(communes);
+        
+        // 3. Sincronizar campos
+        if (useRegisteredAddress && user?.address) {
+            setShippingAddress(user.address);
+        } else if (!useRegisteredAddress) {
+             // Si cambia a "otra dirección", limpia los campos de la calle y ciudad, pero mantiene la región
+             setShippingAddress(prev => ({ street: '', city: '', region: prev.region, zipCode: '' }));
+        }
+        
+        // Si cambia la región y la ciudad actual no está en la nueva lista, la limpiamos
+        if (shippingAddress.city && communes.length > 0 && !communes.includes(shippingAddress.city)) {
+            setShippingAddress(prev => ({ ...prev, city: '' }));
+        }
 
+    }, [useRegisteredAddress, user, shippingAddress.region]); 
+
+
+    // CÁLCULO DE COSTOS Y DESCUENTOS
+    const subtotal = totalPrice;
+    
+    // 1. Descuento DUOCUC
+    const discountRate = user?.hasDuocDiscount ? 0.20 : 0; 
+    const discountDuoc = subtotal * discountRate;
+
+    // 2. Variables para Canjes Aplicados
+    let totalPointsToRedeem = 0;
+    let totalMonetaryCouponValue = 0; 
+    let totalDiscountAppliedPercent = 0; 
+    let isShippingFree = subtotal >= FREE_SHIPPING_THRESHOLD_CLP; // Envío gratis por monto
+    
+    cartItems.forEach(item => {
+        if (item.isRedeemed && item.pointsCost) {
+            totalPointsToRedeem += item.pointsCost * item.quantity;
+            
+            // Recompensa 104: Envío Gratis
+            if (item.product.id === 'reward-104') {
+                 isShippingFree = true;
+            }
+            
+            // Recompensa 102: Cupón de $5000 CLP (valor fijo)
+            if (item.product.id === 'reward-102') {
+                totalMonetaryCouponValue += COUPON_MONETARY_VALUE * item.quantity; 
+            }
+            
+            // Recompensa 106: Cupón 15% OFF (valor porcentual)
+            if (item.product.id === 'reward-106') {
+                 totalDiscountAppliedPercent += subtotal * COUPON_PERCENT_RATE;
+            }
+        }
+    });
+
+    // 3. APLICACIÓN FINAL DEL TOTAL
+    const totalDiscountApplied = discountDuoc + totalMonetaryCouponValue + totalDiscountAppliedPercent;
+    
+    const finalTotalAfterAllDiscounts = subtotal - totalDiscountApplied; 
+    
+    // Costo de Envío (con lógica por región)
+    const shippingPrice = getShippingCost(shippingAddress.region, isShippingFree); 
+    
+    const totalOrder = finalTotalAfterAllDiscounts + shippingPrice;
+    
+    const pointsEarned = Math.floor(finalTotalAfterAllDiscounts / POINTS_RATE) * 10; 
+    
     
     // Función que simula la descarga de la boleta 
     const handleDownloadInvoice = (orderId: string) => {
@@ -116,40 +247,38 @@ const CheckoutPage: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Calcular puntos a restar por canje
-        let totalPointsToRedeem = 0;
-        cartItems.forEach(item => {
-            if (item.isRedeemed && item.pointsCost) {
-                totalPointsToRedeem += item.pointsCost * item.quantity;
-            }
-        });
-        
+        // VALIDACIÓN: Asegurar que todos los campos de envío estén llenos
+        if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.region || shippingAddress.region === '') {
+            setError('Por favor, complete todos los campos de dirección.');
+            setLoading(false);
+            return;
+        }
+
         try {
+            // Calcular la ganancia neta de puntos
+            const netPointsChange = pointsEarned - totalPointsToRedeem;
+            
+            // 1. CREAR ORDEN
             const payload = {
                 userId: user?.id,
                 items: cartItems,
-                shippingAddress,
+                shippingAddress: { ...shippingAddress, notes: shippingNotes },
                 paymentMethod,
                 totalPrice: totalOrder,
                 shippingPrice: shippingPrice,
             };
 
-            // 1. CREAR ORDEN
             const resOrder = await axios.post<Order>('/api/orders', payload);
             const createdOrderId = resOrder.data.id;
             
-            // 2. ACTUALIZAR PUNTOS DEL USUARIO (Ganancia - Canje)
-            const netPointsChange = pointsEarned - totalPointsToRedeem;
-            
+            // 2. ACTUALIZAR PUNTOS DEL USUARIO (Ganancia neta)
             if (user && netPointsChange !== 0) {
                 const resPoints = await axios.put<AuthUser>(`/api/users/${user.id}/points`, { pointsToAdd: netPointsChange });
                 setUserFromRegistration(resPoints.data); 
             }
 
-            // 3. LLAMADA A LA BOLETA INMEDIATA (Simulación de generación)
+            // 3. ABRIR MODAL Y FINALIZAR
             handleDownloadInvoice(createdOrderId); 
-
-            // 4. Abrir Modal y finalizar
             setOrderId(createdOrderId);
             setShowInvoiceModal(true); 
 
@@ -167,20 +296,83 @@ const CheckoutPage: React.FC = () => {
     const Step1Shipping = (
         <Card className="p-4" style={{ backgroundColor: '#111', border: '1px solid #1E90FF' }}>
             <h4 style={{ color: '#1E90FF' }}>1. Dirección de Envío</h4>
-            <Alert variant="warning" style={{ backgroundColor: '#222', border: 'none', color: 'white' }}>
-                Tu dirección registrada es: <strong>{user?.address?.street || 'No registrada'}</strong>. Edita tu perfil si necesitas cambiarla permanentemente.
-            </Alert>
-
+            
+            {/* 🚨 TOGGLE PARA ELEGIR DIRECCIÓN */}
+            <Form.Group className="mb-3">
+                <Form.Check 
+                    type="switch"
+                    id="address-switch"
+                    label={user?.address?.street ? `Usar dirección registrada: (${shippingAddress.street}, ${shippingAddress.region})` : "Usar nueva dirección"}
+                    checked={useRegisteredAddress}
+                    onChange={(e) => setUseRegisteredAddress(e.target.checked)}
+                    disabled={!user?.address?.street} // Deshabilitar si no hay dirección guardada
+                />
+            </Form.Group>
+            
+            {/* 🚨 FORMULARIO DINÁMICO */}
             <Form onSubmit={(e) => { e.preventDefault(); setStep(2); }}>
                 <Form.Group className="mb-3"><Form.Label>Calle y Número</Form.Label>
-                    <Form.Control type="text" value={shippingAddress.street} onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                    <Form.Control 
+                        type="text" 
+                        value={shippingAddress.street} 
+                        onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})} 
+                        required 
+                        disabled={useRegisteredAddress && !!user?.address?.street} // Deshabilita si usa registrada
+                        style={{ backgroundColor: '#333', color: 'white' }}
+                    />
                 </Form.Group>
+                
                 <Row>
-                    <Col><Form.Group className="mb-3"><Form.Label>Ciudad</Form.Label>
-                        <Form.Control type="text" value={shippingAddress.city} onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
-                    <Col><Form.Group className="mb-3"><Form.Label>Región</Form.Label>
-                        <Form.Control type="text" value={shippingAddress.region} onChange={(e) => setShippingAddress({...shippingAddress, region: e.target.value})} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                    <Col md={6}>
+                        <Form.Group className="mb-3"><Form.Label>Región</Form.Label>
+                            <Form.Select 
+                                value={shippingAddress.region} 
+                                // Al cambiar la Región, actualizamos la lista de comunas y reseteamos la ciudad
+                                onChange={(e) => setShippingAddress({...shippingAddress, region: e.target.value, city: ''})} 
+                                required 
+                                disabled={useRegisteredAddress && !!user?.address?.region}
+                                style={{ backgroundColor: '#333', color: 'white' }}
+                            >
+                                <option value="">Seleccione Región</option>
+                                {/* 🚨 Renderiza las regiones desde la data local (CORREGIDO) */}
+                                {CHILEAN_REGIONS_DATA.map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group className="mb-3"><Form.Label>Ciudad / Comuna</Form.Label>
+                            <Form.Select
+                                value={shippingAddress.city} 
+                                onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})} 
+                                required 
+                                // Deshabilita si usa registrada o si no se ha seleccionado región
+                                disabled={(useRegisteredAddress && !!user?.address?.city) || availableCommunes.length === 0}
+                                style={{ backgroundColor: '#333', color: 'white' }}
+                            >
+                                <option value="">Seleccione Comuna</option>
+                                {/* 🚨 Renderiza las comunas disponibles */}
+                                {availableCommunes.map(city => (<option key={city} value={city}>{city}</option>))}
+                            </Form.Select>
+                            {availableCommunes.length === 0 && shippingAddress.region && (
+                                <Form.Text className="text-danger">Seleccione una región válida primero.</Form.Text>
+                            )}
+                        </Form.Group>
+                    </Col>
                 </Row>
+                
+                {/* 🚨 CAMPO DE INDICACIONES */}
+                <Form.Group className="mb-3">
+                    <Form.Label>Indicaciones / Dirección difícil de encontrar (Opcional)</Form.Label>
+                    <Form.Control 
+                        as="textarea" 
+                        rows={2}
+                        value={shippingNotes} 
+                        onChange={(e) => setShippingNotes(e.target.value)} 
+                        style={{ backgroundColor: '#333', color: 'white' }}
+                    />
+                    <Form.Text className="text-muted">Ej: "Casa azul con portón blanco, llamar antes de llegar."</Form.Text>
+                </Form.Group>
+                
                 <Button type="submit" variant="primary" className="mt-3 w-100">Continuar a Pago</Button>
             </Form>
         </Card>
@@ -222,6 +414,7 @@ const CheckoutPage: React.FC = () => {
             
             <h5 className="mt-3 border-bottom pb-2" style={{ color: '#39FF14' }}>Envío a:</h5>
             <p className="text-muted">{shippingAddress.street}, {shippingAddress.city}, {shippingAddress.region}</p>
+            {shippingNotes && <p className="text-muted fst-italic">Notas: {shippingNotes}</p>}
 
             <h5 className="mt-3 border-bottom pb-2" style={{ color: '#39FF14' }}>Método de Pago:</h5>
             <p className="text-muted">{paymentMethod.toUpperCase()}</p>
@@ -294,7 +487,10 @@ const CheckoutPage: React.FC = () => {
                         <OrderSummary 
                             subtotal={subtotal} 
                             shippingPrice={shippingPrice} 
-                            discount={discount} 
+                            discountDuoc={discountDuoc} 
+                            discountCouponValue={totalMonetaryCouponValue}
+                            discountPercentValue={totalDiscountAppliedPercent}
+                            totalPointsRedeemed={totalPointsToRedeem} 
                             discountRate={discountRate}
                             totalOrder={totalOrder}
                             user={user}
@@ -345,7 +541,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ show, handleClose, orderId,
     const handleCloseAndAdvance = () => {
         clearCart(); 
         handleClose(); 
-        setStep(4); // 🚨 AVANZAR EL PASO A LA CONFIRMACIÓN FINAL
+        setStep(4); // AVANZAR EL PASO A LA CONFIRMACIÓN FINAL
     };
 
     const handlePrint = () => {
