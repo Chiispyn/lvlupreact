@@ -6,9 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // 🚨 FUNCIÓN AUXILIAR: Extrae la URL de incrustación del iframe completo
 const extractEmbedSrc = (fullCode: string): string => {
-    // Busca el patrón src="[URL]"
     const match = fullCode.match(/src="([^"]+)"/);
-    // Devuelve la URL limpia (el grupo de captura 1) o el string original si no encuentra el iframe.
     return match ? match[1] : fullCode.includes('http') ? fullCode : ''; 
 };
 
@@ -36,13 +34,14 @@ const getEvents = (req: Request, res: Response) => {
 // @route   POST /api/events/admin
 const createEvent = (req: Request, res: Response) => {
     try {
-        const { title, date, time, location, mapEmbed } = req.body;
+        // 🚨 CAMBIO CRÍTICO: Recibir el campo notes en el body
+        const { title, date, time, location, mapEmbed, notes } = req.body; 
 
         if (!title || !date || !location) {
             return res.status(400).json({ message: 'Faltan campos obligatorios: título, fecha y ubicación.' });
         }
         
-        // 🚨 CORRECCIÓN: Limpiamos el código antes de guardar
+        // Limpiamos el código antes de guardar
         const finalEmbedUrl = extractEmbedSrc(mapEmbed);
 
         const newEvent: Event = {
@@ -51,7 +50,8 @@ const createEvent = (req: Request, res: Response) => {
             date: date,
             time: time || '18:00', 
             location: location,
-            mapEmbed: finalEmbedUrl, // 🚨 Guardamos SOLO la URL limpia
+            mapEmbed: finalEmbedUrl, 
+            notes: notes || '', // 🚨 Guardar el nuevo campo
         };
 
         mockEvents.push(newEvent);
@@ -72,7 +72,7 @@ const updateEvent = (req: Request, res: Response) => {
         if (eventIndex !== -1) {
             const currentEvent = mockEvents[eventIndex];
             
-            // 🚨 CORRECCIÓN: Limpiamos el código si se envió mapEmbed
+            // Limpiamos el código si se envió mapEmbed
             if (updateData.mapEmbed) {
                 updateData.mapEmbed = extractEmbedSrc(updateData.mapEmbed);
             }
@@ -82,8 +82,8 @@ const updateEvent = (req: Request, res: Response) => {
                 ...updateData,
                 date: updateData.date || currentEvent.date,
                 time: updateData.time || currentEvent.time,
-                // Aseguramos que mapEmbed se guarde limpio
                 mapEmbed: updateData.mapEmbed !== undefined ? updateData.mapEmbed : currentEvent.mapEmbed,
+                notes: updateData.notes !== undefined ? updateData.notes : currentEvent.notes, // 🚨 Manejar la actualización de 'notes'
             };
             res.json(mockEvents[eventIndex]);
             return;
