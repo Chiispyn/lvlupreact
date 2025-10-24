@@ -1,14 +1,19 @@
-// level-up-gaming-frontend/src/pages/AdminProductsPage.tsx (CÓDIGO COMPLETO)
+// level-up-gaming-frontend/src/pages/AdminProductsPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather'; // 🚨 Importar AlertTriangle
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card } from 'react-bootstrap';
+import { Edit, Trash, ArrowLeft, PlusCircle, AlertTriangle } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Product } from '../types/Product';
 
 const API_URL = '/api/products';
 const CATEGORIES = ['Consolas', 'Juegos', 'Accesorios', 'Laptops', 'Computadores', 'Juegos de Mesa'];
+
+// Lógica auxiliar (simulación de validación)
+const validateRut = (rutValue: string): boolean => {
+    return true; 
+};
 
 // ----------------------------------------------------
 // PÁGINA PRINCIPAL DE ADMINISTRACIÓN DE PRODUCTOS
@@ -22,7 +27,7 @@ const AdminProductsPage: React.FC = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
 
-    // 🚨 ESTADOS PARA ELIMINACIÓN
+    // ESTADOS PARA EL MODAL DE ELIMINACIÓN
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
 
@@ -49,13 +54,13 @@ const AdminProductsPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000);
     };
 
-    // 🚨 FUNCIÓN: Abre el modal de confirmación
+    // Función que abre el modal de confirmación de eliminación
     const confirmDelete = (id: string, name: string) => {
         setItemToDelete({ id, name });
         setShowDeleteModal(true);
     };
 
-    // 🚨 FUNCIÓN: Ejecuta la eliminación después de la confirmación del modal
+    // Función que ejecuta la eliminación después de la confirmación del modal
     const handleDelete = async () => {
         if (!itemToDelete) return;
         
@@ -94,37 +99,60 @@ const AdminProductsPage: React.FC = () => {
                 </Alert>
             )}
 
-            <Table striped bordered hover responsive style={{ backgroundColor: '#111', color: 'white' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
-                        <th>Top</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {products.map((product) => (
-                        <tr key={product.id}>
-                            <td style={{ fontSize: '0.8rem' }}>{product.id.slice(0, 8)}...</td>
-                            <td>{product.name}</td>
-                            <td>${product.price.toFixed(2)}</td>
-                            <td>{product.countInStock}</td>
-                            <td>{product.isTopSelling ? '✅' : '❌'}</td>
-                            <td>
-                                <Button variant="info" size="sm" className="me-2" onClick={() => setSelectedProduct(product)}>
-                                    <Edit size={14} />
-                                </Button>
-                                <Button variant="danger" size="sm" onClick={() => confirmDelete(product.id, product.name)}>
-                                    <Trash size={14} />
-                                </Button>
-                            </td>
+            {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
+            <div className="table-responsive d-none d-md-block"> 
+                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
+                    </thead>
+                    <tbody>
+                        {products.map((product) => (
+                            <tr key={product.id}>
+                                <td>{product.name}</td>
+                                <td>${product.price.toFixed(0)}</td>
+                                <td>{product.countInStock}</td>
+                                <td><Badge bg="info">{product.category}</Badge></td>
+                                <td>
+                                    <Button variant="info" size="sm" className="me-2" onClick={() => setSelectedProduct(product)}><Edit size={14} /></Button>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(product.id, product.name)}><Trash size={14} /></Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+
+
+            {/* 🚨 VISTA 2: TARJETAS APILADAS (Móvil) */}
+            <Row className="d-block d-md-none g-3">
+                {products.map((product) => (
+                    <Col xs={12} key={product.id}>
+                        <Card style={{ backgroundColor: '#222', border: '1px solid #1E90FF', color: 'white' }}>
+                            <Card.Body>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <h5 className="mb-0" style={{ color: '#39FF14' }}>{product.name}</h5>
+                                    <Badge bg="info">{product.category}</Badge>
+                                </div>
+                                <hr style={{ borderColor: '#444' }}/>
+                                <p className="mb-1">Precio: <strong>${product.price.toFixed(0)} CLP</strong></p>
+                                <p className="mb-3">Stock: <Badge bg={product.countInStock > 5 ? 'success' : 'warning'}>{product.countInStock}</Badge></p>
+
+                                <div className="d-grid gap-2">
+                                    <Button variant="info" size="sm" onClick={() => setSelectedProduct(product)}><Edit size={14} className="me-1"/> Editar</Button>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(product.id, product.name)}><Trash size={14} className="me-1"/> Eliminar</Button>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
 
             {/* Modal de Creación/Edición */}
             <ProductModal
@@ -135,8 +163,8 @@ const AdminProductsPage: React.FC = () => {
                 showStatus={showStatus}
             />
             
-            {/* 🚨 MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
-            <ConfirmDeleteModal
+            {/* Modal de Confirmación de Eliminación */}
+            <ConfirmDeleteModal 
                 show={showDeleteModal}
                 handleClose={() => setShowDeleteModal(false)}
                 handleDelete={handleDelete}
@@ -150,16 +178,23 @@ export default AdminProductsPage;
 
 
 // ----------------------------------------------------
-// COMPONENTE MODAL DE CREACIÓN/EDICIÓN DE PRODUCTO
+// COMPONENTES MODAL AUXILIARES
 // ----------------------------------------------------
 
-interface ProductModalProps {
-    show: boolean;
-    handleClose: () => void;
-    currentProduct: Product | null;
-    fetchProducts: () => void;
-    showStatus: (msg: string, type: 'success' | 'danger') => void;
-}
+interface ConfirmDeleteModalProps { show: boolean; handleClose: () => void; handleDelete: () => void; itemName: string; }
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}><Modal.Title style={{ color: '#FF4444' }}><AlertTriangle size={24} className="me-2"/> Confirmar Eliminación</Modal.Title></Modal.Header>
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}><p>¿Estás seguro de que deseas eliminar a <strong style={{ color: '#39FF14' }}>{itemName}</strong>?</p><Alert variant="warning" className="mt-3">Esta acción no se puede deshacer.</Alert></Modal.Body>
+            <Modal.Footer style={{ backgroundColor: '#111' }}><Button variant="secondary" onClick={handleClose}>Cancelar</Button><Button variant="danger" onClick={handleDelete}>Eliminar</Button></Modal.Footer>
+        </Modal>
+    );
+};
+
+
+interface ProductModalProps { show: boolean; handleClose: () => void; currentProduct: Product | null; fetchProducts: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
 
 const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentProduct, fetchProducts, showStatus }) => {
     const isEditing = !!currentProduct;
@@ -186,11 +221,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     }, [currentProduct, show]);
 
 
-    // FUNCIÓN DE UTILIDAD: Para actualizar el estado
-    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    // FUNCIÓN DE UTILIDAD: Para actualizar el estado (Versión estable)
+    const updateFormData = (e: React.ChangeEvent<any>) => {
         const { name, value, type } = e.target;
         
-        // 🚨 Validación estricta para Price y Stock (enteros positivos)
         if (name === 'price' || name === 'countInStock') {
             const integerValue = parseInt(value);
             if (value === '' || !isNaN(integerValue)) {
@@ -226,14 +260,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     
 
     const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+        e.preventDefault(); setLoading(true); setError(null);
 
         const price = formData.price;
         const stock = formData.countInStock;
 
-        // 🚨 VALIDACIONES CRÍTICAS DE STOCK Y PRECIO
+        // VALIDACIONES CRÍTICAS DE PRECIO Y STOCK
         if (price === null || price < 1 || isNaN(price) || !Number.isInteger(price)) {
             setError('El precio debe ser un número entero y positivo (CLP).');
             setLoading(false);
@@ -250,7 +282,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
 
         let payload: any = { ...formData };
 
-        // --- VALIDACIÓN FINAL ---
+        // --- VALIDACIÓN DE IMAGEN ---
         if (!payload.imageUrl) {
             setError('Debe proporcionar una imagen.');
             setLoading(false);
@@ -281,7 +313,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
     };
 
     return (
-        <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal show={show} onHide={handleClose} centered size="xl">
             <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#1E90FF' }}>
                 <Modal.Title style={{ color: '#1E90FF' }}>{currentProduct ? 'Editar Producto' : 'Crear Nuevo Producto'}</Modal.Title>
             </Modal.Header>
@@ -289,165 +321,85 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, handleClose, currentP
                 {error && <Alert variant="danger">{error}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
+                    <h6 className="mb-3" style={{ color: '#39FF14' }}>Información Básica</h6>
                     <Form.Group className="mb-3">
                         <Form.Label>Nombre</Form.Label>
                         <Form.Control type="text" name="name" value={formData.name || ''} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }} />
                     </Form.Group>
                     
-                    <Form.Group className="mb-3">
-                        <Form.Label>Categoría</Form.Label>
-                        <Form.Select
-                            name="category"
-                            value={formData.category || 'Consolas'} // Valor por defecto
-                            onChange={updateFormData}
-                            required
-                            style={{ backgroundColor: '#333', color: 'white' }}
-                        >
-                            <option value="">Seleccione una categoría</option>
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
+                    {/* 🚨 RESPONSIVIDAD: Categoría y Stock en 6/6 */}
+                    <Row>
+                        <Col md={6} xs={12}> 
+                            <Form.Group className="mb-3">
+                                <Form.Label>Categoría</Form.Label>
+                                <Form.Select name="category" value={formData.category || 'Consolas'} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}>
+                                    <option value="">Seleccione una categoría</option>
+                                    {CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6} xs={12}> 
+                            <Form.Group className="mb-3">
+                                <Form.Label>Stock Disponible</Form.Label>
+                                <Form.Control type="number" name="countInStock" value={formData.countInStock ?? 0} onChange={updateFormData} required step="1" min="0" style={{ backgroundColor: '#333', color: 'white' }} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
                     
                     <Form.Group className="mb-3">
                         <Form.Label>Descripción del Producto</Form.Label> 
                         <Form.Control as="textarea" rows={3} name="description" value={formData.description || ''} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }} />
-                        <Form.Text className="text-muted">Texto general de marketing.</Form.Text>
                     </Form.Group>
                     
                     <Form.Group className="mb-3">
                         <Form.Label>Especificaciones Técnicas</Form.Label> 
-                        <Form.Control 
-                            as="textarea" 
-                            rows={4} 
-                            name="specifications" 
-                            value={formData.specifications || ''} 
-                            onChange={updateFormData} 
-                            style={{ backgroundColor: '#333', color: 'white' }} 
-                        />
-                        <Form.Text className="text-muted">Detalles (Modelo, Fabricante, Tasa de Refresco, etc.).</Form.Text>
+                        <Form.Control as="textarea" rows={4} name="specifications" value={formData.specifications || ''} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }} />
                     </Form.Group>
 
+                    {/* 🚨 RESPONSIVIDAD: Precio y Top Selling en 6/6 */}
                     <Row>
-                        <Col>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Precio (CLP)</Form.Label>
-                                <Form.Control 
-                                    type="number" 
-                                    name="price" 
-                                    value={formData.price ?? 0} 
-                                    onChange={updateFormData} 
-                                    required 
-                                    step="1" // Solo permite enteros en el UI
-                                    min="1"
-                                    style={{ backgroundColor: '#333', color: 'white' }} 
-                                />
+                                <Form.Control type="number" name="price" value={formData.price ?? 0} onChange={updateFormData} required step="1" min="1" style={{ backgroundColor: '#333', color: 'white' }} />
                             </Form.Group>
                         </Col>
-                        <Col>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Stock Disponible</Form.Label>
-                                <Form.Control 
-                                    type="number" 
-                                    name="countInStock" 
-                                    value={formData.countInStock ?? 0} 
-                                    onChange={updateFormData} 
-                                    required 
-                                    step="1" // Solo permite enteros en el UI
-                                    min="0"
-                                    style={{ backgroundColor: '#333', color: 'white' }} 
-                                />
+                        <Col md={6} xs={12}>
+                             <Form.Group className="mb-3">
+                                <Form.Label>Producto Más Vendido</Form.Label>
+                                <Form.Check type="checkbox" label="Marcar como Top Selling" name="isTopSelling" checked={!!formData.isTopSelling} onChange={updateFormData} />
                             </Form.Group>
                         </Col>
                     </Row>
+                    
+                    {/* 🚨 GESTIÓN DE IMAGEN RESPONSIVA */}
+                    <h6 className="mb-3 mt-4 border-top pt-3" style={{ color: '#39FF14' }}>Imagen</h6>
+                    <Row className="mb-3 align-items-center">
+                        <Col md={6} xs={12}> {/* Cargar Archivo */}
+                            <Form.Group>
+                                <Form.Label>Cargar Archivo Local</Form.Label>
+                                <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6} xs={12}> {/* URL Respaldo */}
+                            <Form.Group>
+                                <Form.Label>URL Imagen (Respaldo)</Form.Label>
+                                <Form.Control type="text" name="imageUrl" value={formData.imageUrl || ''} onChange={updateFormData} disabled={formData.imageUrl && formData.imageUrl.startsWith('data:image')} style={{ backgroundColor: '#333', color: 'white' }} />
+                            </Form.Group>
+                        </Col>
+                        {previewUrl && (
+                            <Col xs={12} className="text-center mt-3"> {/* Previsualización en toda la columna */}
+                                <img src={previewUrl} alt="Previsualización" style={{ maxWidth: '150px', maxHeight: '150px' }} className="rounded shadow" />
+                            </Col>
+                        )}
+                    </Row>
 
-                    {/* CAMPO DE ARCHIVO LOCAL (Subida Base64) */}
-                    <Form.Group className="mb-3">
-                        <Form.Label>Imagen del Producto</Form.Label>
-                        <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
-                        <Form.Text className="text-muted">
-                            Selecciona un archivo (se guardará como texto Base64).
-                        </Form.Text>
-                    </Form.Group>
-
-                    {/* PREVISUALIZACIÓN INMEDIATA */}
-                    {previewUrl && (
-                        <div className="mb-3 text-center">
-                            <img
-                                src={previewUrl}
-                                alt="Previsualización"
-                                style={{ maxWidth: '100%', maxHeight: '150px' }}
-                                className="rounded shadow"
-                            />
-                        </div>
-                    )}
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>URL Imagen (Respaldo)</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="imageUrl"
-                            value={formData.imageUrl || ''}
-                            onChange={updateFormData}
-                            // Deshabilitar si hay un Base64 activo (y es muy largo)
-                            disabled={formData.imageUrl && formData.imageUrl.startsWith('data:image')} 
-                            style={{ backgroundColor: '#333', color: 'white' }}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Check type="checkbox" label="Producto Más Vendido" name="isTopSelling" checked={!!formData.isTopSelling} onChange={updateFormData} />
-                    </Form.Group>
 
                     <Button type="submit" variant="primary" className="w-100 mt-3" disabled={loading}>
                         {loading ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Producto')}
                     </Button>
                 </Form>
             </Modal.Body>
-        </Modal>
-    );
-};
-
-
-// ----------------------------------------------------
-// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
-// ----------------------------------------------------
-
-interface ConfirmDeleteModalProps {
-    show: boolean;
-    handleClose: () => void;
-    handleDelete: () => void;
-    itemName: string;
-}
-
-const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
-    return (
-        <Modal show={show} onHide={handleClose} centered>
-            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
-                <Modal.Title style={{ color: '#FF4444' }}>
-                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
-                </Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
-                <p>
-                    ¿Estás seguro de que deseas eliminar a{' '}
-                    <strong style={{ color: '#39FF14' }}>{itemName}</strong>?
-                </p>
-                <Alert variant="warning" className="mt-3">
-                    Esta acción no se puede deshacer.
-                </Alert>
-            </Modal.Body>
-
-            <Modal.Footer style={{ backgroundColor: '#111' }}>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cancelar
-                </Button>
-                <Button variant="danger" onClick={handleDelete}>
-                    Eliminar
-                </Button>
-            </Modal.Footer>
         </Modal>
     );
 };

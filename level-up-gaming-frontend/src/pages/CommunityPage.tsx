@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, ListGroup, Badge, Spinner, Alert, Button } from 'react-bootstrap';
-import { Users, Trello, MapPin, Gift } from 'react-feather';
+import { Users, Trello, MapPin, Gift, Clock, Hash, Calendar } from 'react-feather'; // 🚨 Importar Hash para Notas
 import { mockLevels } from '../data/mockData'; 
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 
 // Interfaces (deben coincidir con el Backend)
@@ -15,13 +16,14 @@ interface Event {
     time: string; // HH:MM
     location: string;
     mapEmbed: string;
+    notes?: string; // 🚨 NUEVO CAMPO DE NOTAS
 }
 
 const API_URL = '/api/events';
 
 
 // ----------------------------------------------------
-// 🚨 COMPONENTE AUXILIAR: TARJETA DE NIVEL (LevelCard) - MOVIDO FUERA DEL SCOPE
+// COMPONENTE AUXILIAR: TARJETA DE NIVEL (LevelCard) 
 // ----------------------------------------------------
 const LevelCard: React.FC<{ level: typeof mockLevels[0] }> = ({ level }) => (
     <Card className="h-100 shadow-sm border-primary" style={{ backgroundColor: '#111', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
@@ -91,7 +93,6 @@ const CommunityPage: React.FC = () => {
             {/* SECCIÓN: SISTEMA DE NIVELES */}
             <h2 className="text-center mb-4 border-bottom pb-2" style={{ color: 'var(--color-azul-electrico)' }}><Trello className="me-2"/> Sistema de Niveles (Loyalty)</h2>
             <Row xs={1} md={2} lg={4} className="g-4 mb-5">
-                {/* 🚨 LevelCard ahora es accesible */}
                 {mockLevels.map(level => (<Col key={level.id}><LevelCard level={level} /></Col>))}
             </Row>
 
@@ -111,12 +112,27 @@ const CommunityPage: React.FC = () => {
                             <Card className="h-100 shadow-sm" style={{ backgroundColor: '#222', color: 'white', border: '1px solid var(--color-azul-electrico)' }}>
                                 <Card.Body>
                                     <Card.Title style={{ color: 'var(--color-azul-electrico)' }}>{event.title}</Card.Title>
-                                    <Card.Subtitle className="mb-2 text-muted">🗓️ {new Date(event.date).toLocaleDateString()} a las {event.time} hrs</Card.Subtitle>
+                                    {/* 🚨 CORRECCIÓN: Usar toLocaleDateString y mostrar la hora */}
+                                    <Card.Subtitle className="mb-2 text-muted">
+                                        <Calendar size={16} className="me-1"/> {new Date(event.date).toLocaleDateString()}
+                                        <Clock size={16} className="ms-3 me-1"/> {event.time} hrs
+                                    </Card.Subtitle>
                                     <Card.Text style={{ color: 'var(--color-gris-claro)' }}><MapPin size={16} className="me-1"/> Ubicación: <strong>{event.location}</strong></Card.Text>
                                     
-                                    {event.mapEmbed && ( 
-                                        <Button variant="primary" size="sm" as="a" href={event.mapEmbed} target="_blank" className="mt-2">Ver Mapa</Button>
+                                    {/* 🚨 MOSTRAR NOTAS LOGÍSTICAS SI EXISTEN */}
+                                    {event.notes && (
+                                        <Card.Text className="text-warning small fst-italic border-top pt-2 mt-2" style={{ color: 'var(--color-gris-claro)' }}>
+                                            <Hash size={14} className="me-1"/> Indicaciones: {event.notes}
+                                        </Card.Text>
                                     )}
+                                    
+                                    <div className="d-flex justify-content-start mt-3">
+                                        {event.mapEmbed && ( 
+                                            <Button variant="primary" size="sm" as="a" href={event.mapEmbed} target="_blank" className="mt-2 me-2">Ver Mapa</Button>
+                                        )}
+                                        {/* 🚨 Botón estático, el admin tiene que ver más detalles desde el panel */}
+                                    </div>
+                                    
                                 </Card.Body>
                                 
                                 {event.mapEmbed && (

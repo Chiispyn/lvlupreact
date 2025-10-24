@@ -1,11 +1,15 @@
 // level-up-gaming-frontend/src/pages/AdminUsersPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form } from 'react-bootstrap';
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card } from 'react-bootstrap';
 import { Edit, ArrowLeft, PlusCircle, AlertTriangle, UserX } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { User } from '../context/AuthContext'; 
+import { User as AuthUser } from '../context/AuthContext'; // Renombrado para evitar conflicto
+
+// 🚨 IMPORTACIÓN CRÍTICA DEL JSON LOCAL
+import CHILEAN_REGIONS_DATA from '../data/chile_regions.json'; 
+
 
 const API_URL = '/api/users';
 
@@ -32,37 +36,30 @@ const validateRut = (rutValue: string): boolean => {
 };
 
 
-// MOCK DATA JERÁRQUICO DE REGIONES CHILENAS (Local para Admin)
-interface ChileanRegion { region: string; provincias: { comunas: string[] }[]; numero_romano: string; }
-
-const CHILEAN_REGIONS_DATA: ChileanRegion[] = [
-    { region: 'Región Metropolitana de Santiago', provincias: [{ provincia: 'Santiago', comunas: ['Santiago', 'Providencia', 'Las Condes', 'Maipú', 'Puente Alto'] }], numero_romano: 'XIII' },
-    { region: 'Biobío', provincias: [{ provincia: 'Concepción', comunas: ['Concepción', 'Talcahuano', 'San Pedro de la Paz', 'Quillón'] }], numero_romano: 'VIII' },
-    { region: 'Valparaíso', provincias: [{ provincia: 'Valparaíso', comunas: ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana'] }], numero_romano: 'V' },
-    { region: 'Los Lagos', provincias: [{ provincia: 'Llanquihue', comunas: ['Puerto Montt', 'Osorno', 'Castro', 'Quellón'] }], numero_romano: 'X' },
-    { region: 'Tarapacá', provincias: [{ provincia: 'Iquique', comunas: ['Iquique', 'Alto Hospicio'] }], numero_romano: 'I' },
-    { region: 'Antofagasta', provincias: [{ provincia: 'Antofagasta', comunas: ['Antofagasta', 'Calama'] }], numero_romano: 'II' },
-];
-
+// 🚨 FUNCIÓN PARA EXTRAER COMUNAS DEL JSON JERÁRQUICO
 const getCommunesByRegionName = (regionName: string): string[] => {
-    const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === regionName);
+    // Aseguramos que CHILEAN_REGIONS_DATA tiene el formato esperado (array de objetos con 'region' y 'provincias')
+    const regionData: any = (CHILEAN_REGIONS_DATA as any[]).find((r: any) => r.region === regionName);
+    
     if (!regionData) return [];
+    
+    // Recorre todas las provincias y concatena las comunas
     return regionData.provincias.flatMap((p: any) => p.comunas);
 };
 
 
 const AdminUsersPage: React.FC = () => {
-    const [users, setUsers] = useState<(User & {isActive?: boolean})[]>([]); 
+    const [users, setUsers] = useState<(AuthUser & {isActive?: boolean})[]>([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedUser, setSelectedUser] = useState<User & {isActive?: boolean} | null>(null); 
+    const [selectedUser, setSelectedUser] = useState<AuthUser & {isActive?: boolean} | null>(null); 
     const [showCreateModal, setShowCreateModal] = useState(false); 
     
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
     
     // ESTADOS PARA EL MODAL DE DESACTIVACIÓN
     const [showDeactivationModal, setShowDeactivationModal] = useState(false);
-    const [userToToggle, setUserToToggle] = useState<User & {isActive?: boolean} | null>(null);
+    const [userToToggle, setUserToToggle] = useState<AuthUser & {isActive?: boolean} | null>(null);
 
 
     const fetchUsers = async () => {
@@ -88,7 +85,7 @@ const AdminUsersPage: React.FC = () => {
     };
 
     // Función que abre el modal de confirmación de desactivación
-    const confirmDeactivation = (user: User & {isActive?: boolean}) => {
+    const confirmDeactivation = (user: AuthUser & {isActive?: boolean}) => {
         if (user.id === 'u1') {
             showStatus('¡ERROR! No puedes modificar al administrador principal.', 'danger');
             return;
@@ -141,64 +138,78 @@ const AdminUsersPage: React.FC = () => {
                 </Alert>
             )}
 
-            <Table striped bordered hover responsive style={{ backgroundColor: '#111', color: 'white' }}>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>RUT</th>
-                        <th>Rol</th>
-                        <th>Estado</th> {/* Columna de Estado */}
-                        <th>Puntos</th>
-                        <th>Descuento</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id} className={!user.isActive ? 'text-muted' : ''}> 
-                            <td>{user.name}</td>
-                            <td>{user.email}</td>
-                            <td className="text-muted">{user.rut}</td>
-                            <td>
-                                <Badge bg={user.role === 'admin' ? 'danger' : 'primary'}>
-                                    {user.role.toUpperCase()}
-                                </Badge>
-                            </td>
-                            <td>
-                                <Badge bg={user.isActive ? 'success' : 'secondary'}>
-                                    {user.isActive ? 'Activo' : 'Inactivo'}
-                                </Badge>
-                            </td>
-                            <td>{user.points}</td>
-                            <td>
-                                <Badge bg={user.hasDuocDiscount ? 'success' : 'secondary'}>
-                                    {user.hasDuocDiscount ? '20% OFF' : 'No'}
-                                </Badge>
-                            </td>
-                            <td>
-                                <Button 
-                                    variant="info" 
-                                    size="sm" 
-                                    className="me-2" 
-                                    onClick={() => setSelectedUser(user)}
-                                >
-                                    <Edit size={14} />
-                                </Button>
-                                {/* 🚨 BOTÓN DE DESACTIVACIÓN/ACTIVACIÓN */}
-                                <Button 
-                                    variant={user.isActive ? 'danger' : 'success'} 
-                                    size="sm" 
-                                    onClick={() => confirmDeactivation(user)}
-                                    disabled={user.role === 'admin'} 
-                                >
-                                    {user.isActive ? <UserX size={14}/> : 'Activar'}
-                                </Button>
-                            </td>
+            {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
+            <div className="table-responsive d-none d-md-block"> 
+                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>RUT</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Puntos</th>
+                            <th>Descuento</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
+                    </thead>
+                    <tbody>
+                        {users.map((user) => (
+                            <tr key={user.id} className={!user.isActive ? 'text-muted' : ''}> 
+                                <td>{user.name}</td>
+                                <td>{user.email}</td>
+                                <td className="text-muted">{user.rut}</td>
+                                <td><Badge bg={user.role === 'admin' ? 'danger' : 'primary'}>{user.role.toUpperCase()}</Badge></td>
+                                <td><Badge bg={user.isActive ? 'success' : 'secondary'}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></td>
+                                <td>{user.points}</td>
+                                <td><Badge bg={user.hasDuocDiscount ? 'success' : 'secondary'}>{user.hasDuocDiscount ? '20% OFF' : 'No'}</Badge></td>
+                                <td>
+                                    <Button variant="info" size="sm" className="me-2" onClick={() => setSelectedUser(user)}><Edit size={14} /></Button>
+                                    <Button variant={user.isActive ? 'danger' : 'success'} size="sm" onClick={() => confirmDeactivation(user)} disabled={user.role === 'admin'}>
+                                        {user.isActive ? <UserX size={14}/> : 'Activar'}
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+
+
+            {/* VISTA 2: TARJETAS APILADAS (Móvil) */}
+            <Row className="d-block d-md-none g-3">
+                {users.map((user) => (
+                    <Col xs={12} key={user.id}>
+                        <Card style={{ backgroundColor: '#222', border: `1px solid ${user.isActive ? '#1E90FF' : '#555'}`, color: 'white' }}>
+                            <Card.Body>
+                                <div className="d-flex justify-content-between align-items-start">
+                                    <h5 className="mb-0" style={{ color: '#39FF14' }}>{user.name}</h5>
+                                    <Badge bg={user.isActive ? 'success' : 'secondary'}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
+                                </div>
+                                <p className="text-muted small mb-1">{user.email}</p>
+                                <hr style={{ borderColor: '#444' }}/>
+                                <div className="d-flex justify-content-between mb-2">
+                                    <span>Rol: <Badge bg="primary">{user.role.toUpperCase()}</Badge></span>
+                                    <span>Puntos: <Badge bg="warning" text="dark">{user.points}</Badge></span>
+                                </div>
+                                <div className="d-flex justify-content-between mb-3">
+                                    <small className="text-muted">RUT: {user.rut}</small>
+                                    <small>Desc. Duoc: <Badge bg={user.hasDuocDiscount ? 'success' : 'secondary'}>{user.hasDuocDiscount ? 'Sí' : 'No'}</Badge></small>
+                                </div>
+
+                                <div className="d-grid gap-2">
+                                    <Button variant="info" size="sm" onClick={() => setSelectedUser(user)}>
+                                        <Edit size={14} className="me-1"/> Editar Datos
+                                    </Button>
+                                    <Button variant={user.isActive ? 'danger' : 'success'} size="sm" onClick={() => confirmDeactivation(user)} disabled={user.role === 'admin'}>
+                                        {user.isActive ? 'Desactivar Cuenta' : 'Activar Cuenta'}
+                                    </Button>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
             
             {/* Modal de Edición */}
             <UserEditModal 
@@ -216,7 +227,7 @@ const AdminUsersPage: React.FC = () => {
                 showStatus={showStatus}
             />
 
-            {/* 🚨 MODAL DE CONFIRMACIÓN DE DESACTIVACIÓN */}
+            {/* MODAL DE CONFIRMACIÓN DE DESACTIVACIÓN */}
             <ConfirmDeactivationModal 
                 show={showDeactivationModal}
                 handleClose={() => setShowDeactivationModal(false)}
@@ -237,35 +248,33 @@ export default AdminUsersPage;
 // ----------------------------------------------------
 
 // Interfaces auxiliares
-interface EditModalProps { user: User | null; handleClose: () => void; fetchUsers: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
+interface EditModalProps { user: AuthUser | null; handleClose: () => void; fetchUsers: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
 interface CreateModalProps { show: boolean; handleClose: () => void; fetchUsers: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
 interface ConfirmDeactivationModalProps { show: boolean; handleClose: () => void; handleDeactivate: () => void; userName: string; currentStatus: boolean; }
 
 
 // Componente de Edición (UserEditModal)
 const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers, showStatus }) => {
-    // 🚨 NUEVO: Estado para la nueva contraseña
-    const [newPassword, setNewPassword] = useState('');
     const [formData, setFormData] = useState({
         name: user?.name || '', email: user?.email || '', role: user?.role || 'customer' as 'admin' | 'customer' | 'seller',
         rut: user?.rut || '', age: user?.age ? user.age.toString() : '0', street: user?.address?.street || '', city: user?.address?.city || '', region: user?.address?.region || '',
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); 
+    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); // Estado para Comunas
 
 
     useEffect(() => {
         if (user) {
             setFormData({ name: user.name, email: user.email, role: user.role, rut: user.rut, age: user.age.toString(), street: user.address.street, city: user.address.city, region: user.address.region, });
-            setNewPassword(''); // Limpiar al abrir
             setError(null);
         }
     }, [user]);
     
     // EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
     useEffect(() => {
-        const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === formData.region);
+        const regionData = (CHILEAN_REGIONS_DATA as any[]).find((r: any) => r.region === formData.region);
+        // Recorrer las provincias y obtener todas las comunas
         const communes = regionData ? regionData.provincias.flatMap((p: any) => p.comunas) : [];
         setAvailableCommunes(communes);
         if (regionData && !communes.includes(formData.city)) {
@@ -277,8 +286,8 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
     if (!user) return null;
     const disableRoleChange = user.id === 'u1'; 
 
-    // 🚨 CORRECCIÓN: Handler que extrae name/value del evento y actualiza (Versión estable)
-    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    // Handler que extrae name/value del evento y actualiza (Versión estable)
+    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (name === 'rut' && value.length > 9) return;
         if (name === 'age' && parseInt(value) > 95) return;
@@ -287,24 +296,10 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault(); setLoading(true); setError(null);
-        
-        // VALIDACIÓN DE CONTRASEÑA NUEVA
-        if (newPassword && newPassword.length < 6) {
-            setError('La nueva contraseña debe tener al menos 6 caracteres.');
-            setLoading(false);
-            return;
-        }
-
         if (!validateRut(formData.rut)) { setError('El RUT ingresado es inválido.'); setLoading(false); return; }
         if (parseInt(formData.age) < 18 || parseInt(formData.age) > 95) { setError('La edad debe estar entre 18 y 95 años.'); setLoading(false); return; }
-        
         try {
-            const payload = { 
-                ...formData, 
-                age: formData.age, // Se envía como string para que el Backend lo parseé
-                address: { street: formData.street, city: formData.city, region: formData.region, zipCode: '', },
-                newPassword: newPassword || undefined, // 🚨 Solo enviamos la nueva contraseña si existe
-            };
+            const payload = { name: formData.name, email: formData.email, role: formData.role, rut: formData.rut, age: formData.age, address: { street: formData.street, city: formData.city, region: formData.region, zipCode: '', }};
             await axios.put(`${API_URL}/${user.id}/admin`, payload);
             fetchUsers(); handleClose(); showStatus(`Usuario ${user.name} actualizado con éxito.`, 'success');
         } catch (err: any) { setError(err.response?.data?.message || 'Fallo al actualizar el usuario.'); } finally { setLoading(false); }
@@ -316,34 +311,35 @@ const UserEditModal: React.FC<EditModalProps> = ({ user, handleClose, fetchUsers
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form onSubmit={handleSubmit}>
                     <h6 className="mb-3" style={{ color: '#39FF14' }}>Datos Principales</h6>
-                    <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Nombre</Form.Label><Form.Control type="text" name="name" value={formData.name} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col></Row>
-                    <Row><Col md={4}><Form.Group className="mb-3"><Form.Label>RUT</Form.Label><Form.Control type="text" name="rut" value={formData.rut} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={2}><Form.Group className="mb-3"><Form.Label>Edad</Form.Label><Form.Control type="number" name="age" value={formData.age} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Rol del Sistema</Form.Label><Form.Select name="role" value={formData.role} onChange={updateFormData} disabled={disableRoleChange} style={{ backgroundColor: '#333', color: 'white' }}><option value="customer">Cliente</option><option value="seller">Vendedor</option><option value="admin">Administrador</option></Form.Select>{disableRoleChange && <Form.Text className="text-danger">No puedes cambiar el rol del administrador principal.</Form.Text>}</Form.Group></Col></Row>
                     
-                    {/* 🚨 CAMPO DE NUEVA CONTRASEÑA */}
-                    <Form.Group className="mb-4">
-                        <Form.Label style={{ color: '#FFC107' }}>Establecer Nueva Contraseña (Opcional)</Form.Label>
-                        <Form.Control 
-                            type="password" 
-                            placeholder="Mínimo 6 caracteres" 
-                            value={newPassword} 
-                            onChange={(e) => setNewPassword(e.target.value)} 
-                            style={{ backgroundColor: '#333', color: 'white' }}
-                        />
-                        <Form.Text className="text-muted">Dejar vacío para mantener la contraseña actual.</Form.Text>
-                    </Form.Group>
+                    {/* GRUPO 1: NOMBRE, EMAIL */}
+                    <Row>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Nombre</Form.Label><Form.Control type="text" name="name" value={formData.name} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                    </Row>
+                    
+                    {/* GRUPO 2: RUT, EDAD, ROL */}
+                    <Row>
+                        <Col md={4} xs={12}><Form.Group className="mb-3"><Form.Label>RUT</Form.Label><Form.Control type="text" name="rut" value={formData.rut} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={2} xs={12}><Form.Group className="mb-3"><Form.Label>Edad</Form.Label><Form.Control type="number" name="age" value={formData.age} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Rol del Sistema</Form.Label><Form.Select name="role" value={formData.role} onChange={updateFormData} disabled={disableRoleChange} style={{ backgroundColor: '#333', color: 'white' }}><option value="customer">Cliente</option><option value="seller">Vendedor</option><option value="admin">Administrador</option></Form.Select>{disableRoleChange && <Form.Text className="text-danger">No puedes cambiar el rol del administrador principal.</Form.Text>}</Form.Group></Col>
+                    </Row>
                     
                     <h6 className="mb-3 mt-3" style={{ color: '#39FF14' }}>Dirección de Envío</h6>
                     <Form.Group className="mb-3"><Form.Label>Calle</Form.Label><Form.Control type="text" name="street" value={formData.street} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group>
+                    
+                    {/* GRUPO 3: REGIÓN, COMUNA */}
                     <Row>
-                        <Col>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3"><Form.Label>Región</Form.Label>
                                 <Form.Select name="region" value={formData.region} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}>
                                     <option value="">Seleccionar Región</option>
-                                    {CHILEAN_REGIONS_DATA.map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
+                                    {/* 🚨 Usamos CHILEAN_REGIONS_DATA importado */}
+                                    {(CHILEAN_REGIONS_DATA as any[]).map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
                                 </Form.Select>
                             </Form.Group>
                         </Col>
-                        <Col>
+                        <Col md={6} xs={12}>
                              <Form.Group className="mb-3"><Form.Label>Ciudad / Comuna</Form.Label>
                                 <Form.Select name="city" value={formData.city} onChange={updateFormData} required disabled={availableCommunes.length === 0} style={{ backgroundColor: '#333', color: 'white' }}>
                                     <option value="">Seleccionar Comuna</option>
@@ -364,23 +360,23 @@ const UserCreateModal: React.FC<CreateModalProps> = ({ show, handleClose, fetchU
     const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'customer' as 'admin' | 'customer' | 'seller', rut: '', age: '0', street: '', city: '', region: '', });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); // 🚨 Estado para Comunas
+    const [availableCommunes, setAvailableCommunes] = useState<string[]>([]); // Estado para Comunas
 
 
     useEffect(() => {
         if (!show) { setFormData({ name: '', email: '', password: '', role: 'customer', rut: '', age: '0', street: '', city: '', region: '' }); setError(null); }
     }, [show]);
     
-    // 🚨 EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
+    // EFECTO PARA CARGAR LAS COMUNAS AL CAMBIAR LA REGIÓN
     useEffect(() => {
-        const regionData: any = CHILEAN_REGIONS_DATA.find((r: any) => r.region === formData.region);
+        const regionData: any = (CHILEAN_REGIONS_DATA as any[]).find((r: any) => r.region === formData.region);
         const communes = regionData ? regionData.provincias.flatMap((p: any) => p.comunas) : [];
         setAvailableCommunes(communes);
     }, [formData.region]);
 
 
-    // 🚨 CORRECCIÓN: Handler que extrae name/value del evento y actualiza
-    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    // CORRECCIÓN: Handler que extrae name/value del evento y actualiza
+    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (name === 'rut' && value.length > 9) return;
         if (name === 'age' && parseInt(value) > 95) return;
@@ -406,21 +402,34 @@ const UserCreateModal: React.FC<CreateModalProps> = ({ show, handleClose, fetchU
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form onSubmit={handleSubmit}>
                     <h6 className="mb-3" style={{ color: '#39FF14' }}>Información de Cuenta</h6>
-                    <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Nombre</Form.Label><Form.Control type="text" name="name" value={formData.name} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col></Row>
-                    <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Contraseña Inicial</Form.Label><Form.Control type="password" name="password" value={formData.password} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={3}><Form.Group className="mb-3"><Form.Label>RUT</Form.Label><Form.Control type="text" name="rut" value={formData.rut} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col><Col md={3}><Form.Group className="mb-3"><Form.Label>Edad</Form.Label><Form.Control type="number" name="age" value={formData.age} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col></Row>
+                    
+                    {/* GRUPO 1: NOMBRE, EMAIL */}
+                    <Row>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Nombre</Form.Label><Form.Control type="text" name="name" value={formData.name} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col></Row>
+                    
+                    {/* GRUPO 2: CONTRASÑA, RUT, EDAD */}
+                    <Row>
+                        <Col md={6} xs={12}><Form.Group className="mb-3"><Form.Label>Contraseña Inicial</Form.Label><Form.Control type="password" name="password" value={formData.password} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={3} xs={6}><Form.Group className="mb-3"><Form.Label>RUT</Form.Label><Form.Control type="text" name="rut" value={formData.rut} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                        <Col md={3} xs={6}><Form.Group className="mb-3"><Form.Label>Edad</Form.Label><Form.Control type="number" name="age" value={formData.age} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group></Col>
+                    </Row>
+                    
                     <Form.Group className="mb-4"><Form.Label>Rol</Form.Label><Form.Select name="role" value={formData.role} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}><option value="customer">Cliente</option><option value="seller">Vendedor</option><option value="admin">Administrador</option></Form.Select></Form.Group>
+                    
                     <h6 className="mb-3 mt-4 border-top pt-3" style={{ color: '#39FF14' }}>Dirección Inicial</h6>
                     <Form.Group className="mb-3"><Form.Label>Calle</Form.Label><Form.Control type="text" name="street" value={formData.street} onChange={updateFormData} style={{ backgroundColor: '#333', color: 'white' }}/></Form.Group>
                     <Row>
-                        <Col>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3"><Form.Label>Región</Form.Label>
                                 <Form.Select name="region" value={formData.region} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}>
                                     <option value="">Seleccionar Región</option>
-                                    {CHILEAN_REGIONS_DATA.map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
+                                    {/* 🚨 Usamos CHILEAN_REGIONS_DATA importado */}
+                                    {(CHILEAN_REGIONS_DATA as any[]).map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
                                 </Form.Select>
                             </Form.Group>
                         </Col>
-                        <Col>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3"><Form.Label>Ciudad / Comuna</Form.Label>
                                 <Form.Select name="city" value={formData.city} onChange={updateFormData} required disabled={availableCommunes.length === 0} style={{ backgroundColor: '#333', color: 'white' }}>
                                     <option value="">Seleccionar Comuna</option>

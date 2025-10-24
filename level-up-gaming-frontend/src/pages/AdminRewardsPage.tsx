@@ -1,8 +1,8 @@
 // level-up-gaming-frontend/src/pages/AdminRewardsPage.tsx (CÓDIGO COMPLETO)
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, Check, X } from 'react-feather';
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card } from 'react-bootstrap';
+import { Edit, Trash, ArrowLeft, PlusCircle, Video, Check, X, Star, AlertTriangle } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -20,7 +20,6 @@ interface Reward {
 
 const API_URL = '/api/rewards';
 const REWARD_TYPES = ['Producto', 'Descuento', 'Envio'];
-// 🚨 TEMPORADAS DISPONIBLES (El administrador puede extender esta lista en el código si lo desea)
 const REWARD_SEASONS = ['Standard', 'Halloween', 'Navidad', 'BlackFriday', 'Verano']; 
 
 
@@ -32,13 +31,15 @@ const AdminRewardsPage: React.FC = () => {
     const [showCreateModal, setShowCreateModal] = useState(false); 
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
+
 
     const fetchRewards = async () => {
         setLoading(true);
         try {
-            // Llama al endpoint GET /api/rewards/admin para obtener TODAS
             const { data } = await axios.get(`${API_URL}/admin`); 
-            setRewards(data.reverse()); // Los más recientes primero
+            setRewards(data.reverse()); 
             setError(null);
         } catch (err: any) {
             setError('Error al cargar las recompensas. Asegúrate de que el Backend esté corriendo.');
@@ -56,15 +57,23 @@ const AdminRewardsPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar la recompensa "${name}"?`)) {
-            try {
-                await axios.delete(`${API_URL}/${id}/admin`); 
-                setRewards(rewards.filter(r => r.id !== id));
-                showStatus(`Recompensa "${name}" eliminada.`, 'success');
-            } catch (err: any) {
-                showStatus('Fallo al eliminar la recompensa.', 'danger');
-            }
+    const confirmDelete = (id: string, name: string) => {
+        setItemToDelete({ id, name });
+        setShowDeleteModal(true);
+    };
+
+    const handleDelete = async () => {
+        if (!itemToDelete) return;
+        
+        try {
+            await axios.delete(`${API_URL}/${itemToDelete.id}/admin`); 
+            setRewards(rewards.filter(r => r.id !== itemToDelete.id));
+            showStatus(`Recompensa "${itemToDelete.name}" eliminada.`, 'success');
+        } catch (err: any) {
+            showStatus('Fallo al eliminar la recompensa.', 'danger');
+        } finally {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
         }
     };
 
@@ -72,22 +81,19 @@ const AdminRewardsPage: React.FC = () => {
         setSelectedReward(reward);
     };
     
-    // 🚨 FUNCIÓN CRÍTICA: Toggle de Activación Rápida
+    // FUNCIÓN CRÍTICA: Toggle de Activación Rápida
     const handleToggleActive = async (id: string, currentStatus: boolean, name: string) => {
         const newStatus = !currentStatus;
         try {
-            // Simulación de PUT para cambiar solo el estado
-            const { data } = await axios.put(`${API_URL}/${id}/admin`, { isActive: newStatus }); 
+            const { data } = await axios.put<Reward>(`${API_URL}/${id}/admin`, { isActive: newStatus }); 
             
-            // Actualizar la lista localmente
-            setRewards(prevRewards => 
-                prevRewards.map(r => r.id === id ? data : r)
-            );
+            setRewards(prevRewards => prevRewards.map(r => r.id === id ? data : r));
             showStatus(`Recompensa "${name}" cambiada a: ${newStatus ? 'ACTIVA' : 'INACTIVA'}.`, 'success');
         } catch (err) {
             showStatus('Fallo al cambiar el estado de la recompensa.', 'danger');
         }
     };
+
 
     if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
     if (error) return <Container className="py-5"><Alert variant="danger">{error}</Alert></Container>;
@@ -112,51 +118,75 @@ const AdminRewardsPage: React.FC = () => {
                 </Alert>
             )}
 
-            <Table striped bordered hover responsive style={{ backgroundColor: '#111', color: 'white' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Costo (Ptos)</th>
-                        <th>Tipo</th>
-                        <th>Temporada</th>
-                        <th>Activar/Desactivar</th> {/* 🚨 ENCABEZADO ACTUALIZADO */}
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rewards.map((reward) => (
-                        <tr key={reward.id}>
-                            <td className="text-muted">{reward.id.slice(0, 5)}...</td>
-                            <td style={{ color: '#39FF14' }}>{reward.name}</td>
-                            <td>{reward.pointsCost}</td>
-                            <td><Badge bg="info">{reward.type}</Badge></td>
-                            <td><Badge bg={reward.season === 'Standard' ? 'secondary' : 'warning'}>{reward.season}</Badge></td>
-                            
-                            {/* 🚨 BOTÓN DE ACCIÓN RÁPIDA (TOGGLE) */}
-                            <td>
-                                <Button 
-                                    variant={reward.isActive ? 'success' : 'danger'} 
-                                    size="sm"
-                                    onClick={() => handleToggleActive(reward.id, reward.isActive, reward.name)}
-                                >
-                                    {reward.isActive ? <Check size={14} /> : <X size={14} />}
-                                </Button>
-                            </td>
-                            
-                            <td>
-                                <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(reward)}>
-                                    <Edit size={14} />
-                                </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(reward.id, reward.name)}>
-                                    <Trash size={14} />
-                                </Button>
-                            </td>
+            {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
+            <div className="table-responsive d-none d-md-block"> 
+                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Costo (Ptos)</th>
+                            <th>Tipo</th>
+                            <th>Temporada</th>
+                            <th>Activar/Desactivar</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
-            
+                    </thead>
+                    <tbody>
+                        {rewards.map((reward) => (
+                            <tr key={reward.id}>
+                                <td style={{ color: '#39FF14' }}>{reward.name}</td>
+                                <td>{reward.pointsCost}</td>
+                                <td><Badge bg="info">{reward.type}</Badge></td>
+                                <td><Badge bg={reward.season === 'Standard' ? 'secondary' : 'warning'}>{reward.season}</Badge></td>
+                                
+                                <td>
+                                    <Button variant={reward.isActive ? 'success' : 'danger'} size="sm" onClick={() => handleToggleActive(reward.id, reward.isActive, reward.name)}>
+                                        {reward.isActive ? <Check size={14} /> : <X size={14} />}
+                                    </Button>
+                                </td>
+                                
+                                <td>
+                                    <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(reward)}><Edit size={14} /></Button>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(reward.id, reward.name)}><Trash size={14} /></Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+
+            {/* 🚨 VISTA 2: TARJETAS APILADAS (Móvil) */}
+            <Row className="d-block d-md-none g-3">
+                {rewards.map((reward) => (
+                    <Col xs={12} key={reward.id}>
+                        <Card style={{ backgroundColor: '#222', border: '1px solid #1E90FF', color: 'white' }}>
+                            <Card.Body>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <h5 className="mb-0" style={{ color: '#39FF14' }}>{reward.name}</h5>
+                                    <Badge bg={reward.type === 'Descuento' ? 'warning' : 'info'}>{reward.type}</Badge>
+                                </div>
+                                <p className="text-muted small mb-1">{reward.description}</p>
+                                <hr style={{ borderColor: '#444' }}/>
+                                
+                                <div className="d-flex justify-content-between mb-3">
+                                    <span>Costo: <Badge bg="success">{reward.pointsCost} Pts</Badge></span>
+                                    <span>Temporada: <Badge bg="secondary">{reward.season}</Badge></span>
+                                </div>
+
+                                <div className="d-grid gap-2">
+                                    <Button variant="info" size="sm" onClick={() => handleEdit(reward)}><Edit size={14} className="me-1"/> Editar</Button>
+                                    <Button variant={reward.isActive ? 'danger' : 'success'} size="sm" onClick={() => handleToggleActive(reward.id, reward.isActive, reward.name)}>
+                                        {reward.isActive ? 'Desactivar' : 'Activar'}
+                                    </Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => confirmDelete(reward.id, reward.name)}><Trash size={14} className="me-1"/> Eliminar</Button>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
+
             {/* Modal de Creación/Edición */}
             <RewardModal
                 reward={selectedReward} 
@@ -164,6 +194,14 @@ const AdminRewardsPage: React.FC = () => {
                 handleClose={() => { setSelectedReward(null); setShowCreateModal(false); }}
                 fetchRewards={fetchRewards}
                 showStatus={showStatus}
+            />
+            
+            {/* Modal de Confirmación de Eliminación */}
+            <ConfirmDeleteModal 
+                show={showDeleteModal}
+                handleClose={() => setShowDeleteModal(false)}
+                handleDelete={handleDelete}
+                itemName={itemToDelete?.name || 'esta recompensa'}
             />
         </Container>
     );
@@ -173,27 +211,33 @@ export default AdminRewardsPage;
 
 
 // ----------------------------------------------------
-// COMPONENTE MODAL DE CREACIÓN/EDICIÓN
+// COMPONENTES MODAL AUXILIARES
 // ----------------------------------------------------
 
-interface RewardModalProps {
-    reward: Reward | null;
-    show: boolean;
-    handleClose: () => void;
-    fetchRewards: () => void;
-    showStatus: (msg: string, type: 'success' | 'danger') => void;
-}
+interface ConfirmDeleteModalProps { show: boolean; handleClose: () => void; handleDelete: () => void; itemName: string; }
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}><Modal.Title style={{ color: '#FF4444' }}><AlertTriangle size={24} className="me-2"/> Confirmar Eliminación</Modal.Title></Modal.Header>
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}><p>¿Estás seguro de que deseas eliminar a <strong style={{ color: '#39FF14' }}>{itemName}</strong>?</p><Alert variant="warning" className="mt-3">Esta acción no se puede deshacer.</Alert></Modal.Body>
+            <Modal.Footer style={{ backgroundColor: '#111' }}><Button variant="secondary" onClick={handleClose}>Cancelar</Button><Button variant="danger" onClick={handleDelete}>Eliminar</Button></Modal.Footer>
+        </Modal>
+    );
+};
+
+
+interface RewardModalProps { reward: Reward | null; show: boolean; handleClose: () => void; fetchRewards: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
 
 const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fetchRewards, showStatus }) => {
     const isEditing = !!reward;
-    // 🚨 Aquí usamos la lista de temporadas disponibles
     const [formData, setFormData] = useState({
         name: reward?.name || '',
         type: reward?.type || 'Producto' as 'Producto' | 'Descuento' | 'Envio',
         pointsCost: reward?.pointsCost || 0,
         description: reward?.description || '',
         isActive: reward?.isActive !== undefined ? reward.isActive : true,
-        season: reward?.season || 'Standard' as 'Standard' | 'Halloween' | 'Navidad',
+        season: reward?.season || 'Standard',
         imageUrl: reward?.imageUrl || '',
     });
     const [loading, setLoading] = useState(false);
@@ -212,15 +256,15 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
         setError(null);
     }, [reward, show]);
 
-    const updateFormData = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
+    const updateFormData = (e: React.ChangeEvent<any>) => {
+        const { name, value } = e.target;
         setFormData(prev => ({ 
             ...prev, 
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : (name === 'pointsCost' ? parseInt(value) || 0 : value), 
+            [name]: name === 'isActive' ? (e.target as HTMLInputElement).checked : (name === 'pointsCost' ? parseInt(value) || 0 : value), 
         }));
     };
     
-    // HANDLER DE ARCHIVO: Muestra la previsualización Base64
+    // HANDLER DE ARCHIVO: Convierte a Base64 y lo pone en formData.imageUrl
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -241,11 +285,8 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
 
 
     const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+        e.preventDefault(); setLoading(true); setError(null);
 
-        // VALIDACIÓN: Nombre y Costo
         if (formData.pointsCost < 1) { setError('El costo debe ser mayor a 0 puntos.'); setLoading(false); return; }
         if (formData.name.length < 3) { setError('El nombre debe tener al menos 3 caracteres.'); setLoading(false); return; }
         if (!formData.imageUrl) { setError('Debe proporcionar una imagen.'); setLoading(false); return; }
@@ -255,7 +296,6 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
         const method = isEditing ? 'PUT' : 'POST';
 
         try {
-            // El payload ya contiene la URL (Base64 o Link) en formData.imageUrl
             await axios({
                 method: method,
                 url: url,
@@ -274,7 +314,7 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
     };
     
     return (
-        <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal show={show} onHide={handleClose} centered size="xl">
             <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#1E90FF' }}>
                 <Modal.Title style={{ color: '#39FF14' }}>{isEditing ? 'Editar Recompensa' : 'Crear Nueva Recompensa'}</Modal.Title>
             </Modal.Header>
@@ -288,13 +328,13 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
                     </Form.Group>
                     
                     <Row>
-                        <Col md={4}>
+                        <Col md={4} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Costo en Puntos</Form.Label>
                                 <Form.Control type="number" name="pointsCost" value={formData.pointsCost} onChange={updateFormData} required min={1} style={{ backgroundColor: '#333', color: 'white' }}/>
                             </Form.Group>
                         </Col>
-                        <Col md={4}>
+                        <Col md={4} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Tipo</Form.Label>
                                 <Form.Select name="type" value={formData.type} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}>
@@ -302,7 +342,7 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
                                 </Form.Select>
                             </Form.Group>
                         </Col>
-                        <Col md={4}>
+                        <Col md={4} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Temporada</Form.Label>
                                 <Form.Select name="season" value={formData.season} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}>
@@ -317,24 +357,22 @@ const RewardModal: React.FC<RewardModalProps> = ({ reward, show, handleClose, fe
                         <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/>
                     </Form.Group>
                     
-                    {/* 🚨 GESTIÓN DE IMAGEN */}
+                    {/* 🚨 GESTIÓN DE IMAGEN RESPONSIVA */}
+                    <h6 className="mb-3 mt-4 border-top pt-3" style={{ color: '#39FF14' }}>Imagen</h6>
                     <Row className="mb-3 align-items-center">
-                        <Col md={6}>
+                        <Col md={6} xs={12}>
                             <Form.Group>
                                 <Form.Label>Imagen (Archivo)</Form.Label>
                                 <Form.Control type="file" onChange={handleFileChange} accept="image/*"/>
-                                <Form.Text className="text-muted">
-                                    Se recomienda cargar un archivo local (Base64).
-                                </Form.Text>
+                                <Form.Text className="text-muted">Se recomienda cargar un archivo local (Base64).</Form.Text>
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
+                        <Col md={6} xs={12}>
                             <Form.Group>
                                 <Form.Label>URL Imagen (Respaldo)</Form.Label>
                                 <Form.Control type="text" name="imageUrl" value={formData.imageUrl} onChange={updateFormData} disabled={formData.imageUrl.startsWith('data:image')} style={{ backgroundColor: '#333', color: 'white' }}/>
                             </Form.Group>
                         </Col>
-                        {/* Previsualización */}
                         {previewUrl && (
                             <Col xs={12} className="text-center mt-3">
                                 <img src={previewUrl} alt="Previsualización" style={{ maxWidth: '100px', maxHeight: '100px' }} className="rounded shadow" />

@@ -1,10 +1,13 @@
 // level-up-gaming-frontend/src/pages/AdminEventsPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Container, Table, Alert, Spinner, Button, Modal, Row, Col, Form } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, MapPin, AlertTriangle } from 'react-feather'; // 🚨 Importar AlertTriangle
+import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card } from 'react-bootstrap';
+import { Edit, Trash, ArrowLeft, PlusCircle, Calendar, MapPin, AlertTriangle, Eye, Hash } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+// 🚨 IMPORTACIÓN DE UTILITIES DE REGIONES (Usando el JSON real)
+import { ALL_REGIONS_DATA, getCommunesByRegionName } from '../utils/regionUtils';
+
 
 // Interfaces (deben coincidir con el Backend)
 interface Event {
@@ -12,8 +15,9 @@ interface Event {
     title: string;
     date: string; // YYYY-MM-DD
     time: string; // HH:MM
-    location: string;
+    location: string; // "Comuna, Región" o "Lugar Fijo"
     mapEmbed: string;
+    notes?: string; // Campo de notas logísticas
 }
 
 const API_URL = '/api/events';
@@ -30,9 +34,10 @@ const AdminEventsPage: React.FC = () => {
     const [showCreateModal, setShowCreateModal] = useState(false); 
     const [statusMessage, setStatusMessage] = useState<{ msg: string, type: 'success' | 'danger' } | null>(null);
     
-    // 🚨 ESTADOS PARA EL MODAL DE ELIMINACIÓN
+    // ESTADOS PARA MODALES
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [eventToDelete, setEventToDelete] = useState<{ id: string, title: string } | null>(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false); // 🚨 Nuevo estado para el modal de detalles
 
 
     const fetchEvents = async () => {
@@ -57,13 +62,11 @@ const AdminEventsPage: React.FC = () => {
         setTimeout(() => setStatusMessage(null), 5000); 
     };
 
-    // 🚨 FUNCIÓN: Abre el modal de confirmación
     const confirmDelete = (id: string, title: string) => {
         setEventToDelete({ id, title });
         setShowDeleteModal(true);
     };
 
-    // 🚨 FUNCIÓN: Ejecuta la eliminación después de la confirmación del modal
     const handleDelete = async () => {
         if (!eventToDelete) return;
         
@@ -82,6 +85,12 @@ const AdminEventsPage: React.FC = () => {
     
     const handleEdit = (event: Event) => {
         setSelectedEvent(event);
+    };
+    
+    // 🚨 Función para mostrar los detalles
+    const handleShowDetails = (event: Event) => {
+        setSelectedEvent(event);
+        setShowDetailsModal(true);
     };
 
 
@@ -108,51 +117,86 @@ const AdminEventsPage: React.FC = () => {
                 </Alert>
             )}
 
-            <Table striped bordered hover responsive style={{ backgroundColor: '#111', color: 'white' }}>
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Ubicación</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {events.map((event) => (
-                        <tr key={event.id}>
-                            <td style={{ color: '#39FF14' }}>{event.title}</td>
-                            <td>{new Date(event.date).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                            <td>{event.time}</td>
-                            <td><MapPin size={14} className="me-1"/>{event.location}</td>
-                            <td>
-                                <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(event)}>
-                                    <Edit size={14} /> Editar
-                                </Button>
-                                <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}>
-                                    <Trash size={14} />
-                                </Button>
-                            </td>
+            {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
+            <div className="table-responsive d-none d-md-block"> 
+                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Fecha</th>
+                            <th>Ubicación (Comuna, Región)</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
-            
+                    </thead>
+                    <tbody>
+                        {events.map((event) => (
+                            <tr key={event.id}>
+                                <td style={{ color: '#39FF14' }}>{event.title}</td>
+                                <td>{new Date(event.date).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })} a las {event.time} hrs</td>
+                                <td><MapPin size={14} className="me-1"/>{event.location}</td>
+                                <td>
+                                    <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(event)}><Edit size={14} /></Button>
+                                    {/* 🚨 Botón para Notas */}
+                                    <Button variant="secondary" size="sm" className="me-2" onClick={() => handleShowDetails(event)}><Eye size={14} /></Button>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}><Trash size={14} /></Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+
+            {/* VISTA 2: TARJETAS APILADAS (Móvil) */}
+            <Row className="d-block d-md-none g-3">
+                {events.map((event) => (
+                    <Col xs={12} key={event.id}>
+                        <Card style={{ backgroundColor: '#222', border: '1px solid #1E90FF', color: 'white' }}>
+                            <Card.Body>
+                                <Card.Title style={{ color: '#39FF14' }}>{event.title}</Card.Title>
+                                <Card.Subtitle className="mb-2 text-muted small">
+                                    🗓️ {new Date(event.date).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })} a las {event.time} hrs
+                                </Card.Subtitle>
+                                <hr style={{ borderColor: '#444' }}/>
+                                <p className="mb-3"><MapPin size={16} className="me-1"/> Ubicación: <strong>{event.location}</strong></p>
+
+                                <div className="d-grid gap-2">
+                                    {event.mapEmbed && ( 
+                                        <Button variant="primary" size="sm" as="a" href={event.mapEmbed} target="_blank" className="mb-2">Ver Mapa</Button>
+                                    )}
+                                    {/* 🚨 Botón para Notas */}
+                                    <Button variant="secondary" size="sm" onClick={() => handleShowDetails(event)}><Eye size={14} className="me-1"/> Ver Detalles</Button>
+                                    <Button variant="info" size="sm" onClick={() => handleEdit(event)}><Edit size={14} className="me-1"/> Editar</Button>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}><Trash size={14} className="me-1"/> Eliminar</Button>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
+
             {/* Modal de Creación/Edición */}
             <EventModal
                 event={selectedEvent} 
-                show={showCreateModal || !!selectedEvent}
+                show={showCreateModal || (!!selectedEvent && !showDetailsModal)} // Solo mostrar si no estamos viendo detalles
                 handleClose={() => { setSelectedEvent(null); setShowCreateModal(false); }}
                 fetchEvents={fetchEvents}
                 showStatus={showStatus}
             />
             
-            {/* 🚨 NUEVO MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
-            <ConfirmDeleteModal
+            {/* 🚨 Modal de Detalles (Muestra las Notas) */}
+            <EventDetailsModal
+                event={selectedEvent}
+                show={showDetailsModal}
+                handleClose={() => { setSelectedEvent(null); setShowDetailsModal(false); }}
+            />
+            
+            {/* Modal de Confirmación de Eliminación */}
+            <ConfirmDeleteModal 
                 show={showDeleteModal}
                 handleClose={() => setShowDeleteModal(false)}
                 handleDelete={handleDelete}
-                eventName={eventToDelete?.title || ''}
+                itemName={eventToDelete?.title || 'este evento'}
             />
         </Container>
     );
@@ -162,54 +206,151 @@ export default AdminEventsPage;
 
 
 // ----------------------------------------------------
-// COMPONENTE MODAL DE CREACIÓN/EDICIÓN DE EVENTO
+// COMPONENTES MODAL AUXILIARES
 // ----------------------------------------------------
 
-interface EventModalProps {
-    event: Event | null;
-    show: boolean;
-    handleClose: () => void;
-    fetchEvents: () => void;
-    showStatus: (msg: string, type: 'success' | 'danger') => void;
-}
+interface ConfirmDeleteModalProps { show: boolean; handleClose: () => void; handleDelete: () => void; itemName: string; }
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}><Modal.Title style={{ color: '#FF4444' }}><AlertTriangle size={24} className="me-2"/> Confirmar Eliminación</Modal.Title></Modal.Header>
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}><p>¿Estás seguro de que deseas eliminar a <strong style={{ color: '#39FF14' }}>{itemName}</strong>?</p><Alert variant="warning" className="mt-3">Esta acción no se puede deshacer.</Alert></Modal.Body>
+            <Modal.Footer style={{ backgroundColor: '#111' }}><Button variant="secondary" onClick={handleClose}>Cancelar</Button><Button variant="danger" onClick={handleDelete}>Eliminar</Button></Modal.Footer>
+        </Modal>
+    );
+};
+
+
+// 🚨 NUEVO MODAL PARA MOSTRAR DETALLES Y NOTAS LOGÍSTICAS
+interface EventDetailsModalProps { event: Event | null; show: boolean; handleClose: () => void; }
+
+const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, show, handleClose }) => {
+    if (!event) return null;
+    
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#39FF14' }}>
+                <Modal.Title style={{ color: '#39FF14' }}><Eye size={24} className="me-2"/> Detalles del Evento: {event.title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
+                <p><strong><MapPin size={16} className="me-1"/> Ubicación Principal:</strong> {event.location}</p>
+                <hr style={{ borderColor: '#444' }}/>
+                
+                <h6 style={{ color: '#1E90FF' }} className="mb-3"><Hash size={18} className="me-1"/> Notas Logísticas / Indicaciones</h6>
+                <div 
+                    style={{ 
+                        backgroundColor: '#333', 
+                        padding: '15px', 
+                        borderRadius: '8px', 
+                        whiteSpace: 'pre-wrap', 
+                        minHeight: '80px',
+                        borderLeft: '3px solid #1E90FF'
+                    }}
+                >
+                    {/* 🚨 MOSTRAR LAS NOTAS AQUÍ */}
+                    {event.notes || 'No se han registrado notas logísticas adicionales.'}
+                </div>
+                
+                {event.mapEmbed && (
+                    <div className="mt-4">
+                         <h6 style={{ color: '#1E90FF' }} className="mb-2"><MapPin size={18} className="me-1"/> Enlace de Mapa</h6>
+                         <Button variant="primary" size="sm" as="a" href={event.mapEmbed} target="_blank">Abrir Mapa Embed</Button>
+                    </div>
+                )}
+                
+            </Modal.Body>
+            <Modal.Footer style={{ backgroundColor: '#111' }}>
+                <Button variant="secondary" onClick={handleClose}>Cerrar</Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};
+
+
+interface EventModalProps { event: Event | null; show: boolean; handleClose: () => void; fetchEvents: () => void; showStatus: (msg: string, type: 'success' | 'danger') => void; }
 
 const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetchEvents, showStatus }) => {
     const isEditing = !!event;
-    // Obtener la fecha actual en formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
-    // Obtener la fecha máxima permitida (ej. 1 año a partir de ahora)
     const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10);
 
-    // Inicialización del estado del formulario
+    // Separar la ubicación guardada para inicializar los selectores
+    const locationParts = event?.location.includes(',') ? event.location.split(',').map(s => s.trim()) : [event?.location || '', ''];
+    const [initialCommune, initialRegion] = locationParts.length === 2 ? [locationParts[0], locationParts[1]] : ['', locationParts[0] || ''];
+
+
     const [formData, setFormData] = useState({
         title: event?.title || '',
-        date: event?.date || today, // Usar la fecha de hoy como default
+        date: event?.date || today,
         time: event?.time || '18:00',
-        location: event?.location || '',
-        mapEmbed: event?.mapEmbed || '', // Almacena el código completo
+        location: event?.location || '', // Comuna, Región (Se auto-genera)
+        mapEmbed: event?.mapEmbed || '', 
+        notes: event?.notes || '', // Notas logísticas
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // ESTADOS PARA SELECTORES ANIDADOS
+    const [regionSelected, setRegionSelected] = useState(initialRegion);
+    const [communeSelected, setCommuneSelected] = useState(initialCommune);
+    const [communesAvailable, setCommunesAvailable] = useState<string[]>([]);
+
 
     useEffect(() => {
+        // 1. Cargar comunas disponibles
+        const communes = getCommunesByRegionName(regionSelected);
+        setCommunesAvailable(communes);
+        
+        // 2. Sincronización de Location: se actualiza cada vez que se selecciona Región o Comuna
+        if (regionSelected && communeSelected && communes.includes(communeSelected)) {
+            // 🚨 Auto-asigna: Comuna, Región
+            setFormData(prev => ({ ...prev, location: `${communeSelected}, ${regionSelected}` }));
+        } else if (regionSelected) {
+            setFormData(prev => ({ ...prev, location: regionSelected })); // Muestra solo la región si la comuna no es válida o no seleccionada
+        }
+        
+    }, [regionSelected, communeSelected]); 
+
+
+    useEffect(() => {
+        // Sincronizar estados al abrir/cerrar modal
         if (event) {
-            setFormData({ title: event.title, date: event.date, time: event.time, location: event.location, mapEmbed: event.mapEmbed });
+            const locationParts = event.location.includes(',') ? event.location.split(',').map(s => s.trim()) : [event.location, ''];
+            const [commune, region] = locationParts.length === 2 ? [locationParts[0], locationParts[1]] : ['', locationParts[0]];
+            
+            setFormData({ title: event.title, date: event.date, time: event.time, location: event.location, mapEmbed: event.mapEmbed, notes: event.notes || '' });
+            setRegionSelected(region);
+            setCommuneSelected(commune);
         } else {
-            // Resetear a valores iniciales (fecha de hoy)
-            setFormData({ title: '', date: today, time: '18:00', location: '', mapEmbed: '' });
+            setFormData({ title: '', date: today, time: '18:00', location: '', mapEmbed: '', notes: '' });
+            setRegionSelected('');
+            setCommuneSelected('');
         }
         setError(null);
     }, [event, show]);
 
-    const updateFormData = (name: string, value: string) => {
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+    const updateFormData = (e: React.ChangeEvent<any>) => {
+        const { name, value, type } = e.target;
+        
+        if (name === 'regionSelect') {
+            setRegionSelected(value);
+            setCommuneSelected(''); // Resetea comuna
+            setFormData(prev => ({ ...prev, location: value })); // Temporalmente solo Región
+        } 
+        else if (name === 'communeSelect') {
+            setCommuneSelected(value);
+            // El useEffect se encarga de rellenar formData.location con "Comuna, Región"
+        }
+        else {
+            setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }));
+        }
     };
 
     // FUNCIÓN CRÍTICA: Extrae la URL de incrustación del iframe completo
     const extractEmbedSrc = (fullCode: string): string => {
-        // Usa una expresión regular simple para encontrar el valor de src="..."
         const match = fullCode.match(/src="([^"]+)"/);
-        // Si encuentra el src, devuelve la URL limpia, si no, devuelve el código si parece una URL, si no, vacío.
         return match ? match[1] : fullCode.includes('http') ? fullCode : ''; 
     };
 
@@ -220,25 +361,17 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
         
         const payload = { ...formData };
         
-        // 1. Procesar el código que pegó el administrador (extraer solo la URL)
+        // 1. Procesar el código que pegó el administrador
         if (payload.mapEmbed.includes('<iframe') || payload.mapEmbed.includes('http')) {
              payload.mapEmbed = extractEmbedSrc(payload.mapEmbed);
         }
         
-        // 2. VALIDACIÓN DE FECHA: No permitir fechas pasadas
-        if (new Date(formData.date) < new Date(today) && !isEditing) {
-            setError('No puedes agendar eventos en el pasado.');
-            setLoading(false);
-            return;
-        }
-
-        // 3. Validación Final
-        if (payload.mapEmbed && !payload.mapEmbed.startsWith('http')) {
-             setError('La URL de incrustación es inválida. Debe ser una URL web (http/https).');
+        // 2. VALIDACIÓN DE UBICACIÓN
+        if (!payload.location || payload.location.length < 5) {
+             setError('Debe seleccionar una Ubicación válida (Región y Comuna).');
              setLoading(false);
              return;
         }
-
 
         const url = isEditing ? `${API_URL}/${event!.id}/admin` : `${API_URL}/admin`;
         const method = isEditing ? 'PUT' : 'POST';
@@ -262,7 +395,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
     };
     
     return (
-        <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal show={show} onHide={handleClose} centered size="xl">
             <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#1E90FF' }}>
                 <Modal.Title style={{ color: '#39FF14' }}>{isEditing ? 'Editar Evento' : 'Crear Nuevo Evento'}</Modal.Title>
             </Modal.Header>
@@ -272,38 +405,99 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <Form.Label>Título</Form.Label>
-                        <Form.Control type="text" name="title" value={formData.title} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                        <Form.Control type="text" name="title" value={formData.title} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/>
                     </Form.Group>
                     
+                    {/* RESPONSIVIDAD: Fecha y Hora en 6/6 */}
                     <Row>
-                        <Col md={6}>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Fecha</Form.Label>
                                 <Form.Control 
                                     type="date" 
                                     name="date" 
                                     value={formData.date} 
-                                    onChange={(e) => updateFormData(e.target.name, e.target.value)} 
+                                    onChange={updateFormData} 
                                     required 
-                                    min={today} // MÍNIMO HOY
-                                    max={maxDate} // MÁXIMO 1 AÑO
+                                    min={today} 
+                                    max={maxDate} 
                                     style={{ backgroundColor: '#333', color: 'white' }}
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
+                        <Col md={6} xs={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Hora</Form.Label>
-                                <Form.Control type="time" name="time" value={formData.time} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                                <Form.Control type="time" name="time" value={formData.time} onChange={updateFormData} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    
+                    {/* SELECTORES DE REGIÓN/COMUNA */}
+                    <h6 className="mb-3 mt-3 border-top pt-3" style={{ color: '#39FF14' }}>Ubicación Geográfica</h6>
+                    <Row>
+                        <Col md={6} xs={12}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Región</Form.Label>
+                                <Form.Select 
+                                    name="regionSelect" 
+                                    value={regionSelected} 
+                                    onChange={updateFormData} 
+                                    required 
+                                    style={{ backgroundColor: '#333', color: 'white' }}
+                                >
+                                    <option value="">Seleccionar Región</option>
+                                    {/* 🚨 USANDO ALL_REGIONS_DATA DEL ARCHIVO DE UTILIDAD */}
+                                    {ALL_REGIONS_DATA.map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6} xs={12}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Comuna</Form.Label>
+                                <Form.Select 
+                                    name="communeSelect" 
+                                    value={communeSelected} 
+                                    onChange={updateFormData} 
+                                    required 
+                                    disabled={communesAvailable.length === 0}
+                                    style={{ backgroundColor: '#333', color: 'white' }}
+                                >
+                                    <option value="">Seleccionar Comuna</option>
+                                    {communesAvailable.map(com => (<option key={com} value={com}>{com}</option>))}
+                                </Form.Select>
                             </Form.Group>
                         </Col>
                     </Row>
                     
                     <Form.Group className="mb-3">
-                        <Form.Label>Ubicación</Form.Label>
-                        <Form.Control type="text" name="location" value={formData.location} onChange={(e) => updateFormData(e.target.name, e.target.value)} required style={{ backgroundColor: '#333', color: 'white' }}/>
+                        <Form.Label>Ubicación (Resultado Automático)</Form.Label>
+                        <Form.Control 
+                            type="text" 
+                            name="location" 
+                            value={formData.location} 
+                            readOnly 
+                            style={{ backgroundColor: '#444', color: 'white' }}
+                        />
+                        <Form.Text className="text-muted">Se autocompleta con: Comuna, Región.</Form.Text>
                     </Form.Group>
                     
+                    {/* CAMPO DE NOTAS/COMENTARIOS */}
+                    <Form.Group className="mb-3">
+                        <Form.Label>Notas Logísticas (Uso interno y público en el modal de detalles)</Form.Label>
+                        <Form.Control 
+                            as="textarea" 
+                            rows={3} 
+                            name="notes" 
+                            value={formData.notes} 
+                            onChange={updateFormData} 
+                            style={{ backgroundColor: '#333', color: 'white' }}
+                        />
+                        <Form.Text className="text-muted">
+                            **Ej: Calle Esquella #245 a 5 cuadras del metro Alameda.**
+                        </Form.Text>
+                    </Form.Group>
+
                     <Form.Group className="mb-3">
                         <Form.Label>URL Embed de Mapa (Iframe Completo)</Form.Label>
                         <Form.Control 
@@ -311,11 +505,11 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                             rows={3} 
                             name="mapEmbed" 
                             value={formData.mapEmbed} 
-                            onChange={(e) => updateFormData(e.target.name, e.target.value)} 
+                            onChange={updateFormData} 
                             style={{ backgroundColor: '#333', color: 'white' }}
                         />
                         <Form.Text className="text-muted">
-                            Paso: Pegue aquí el código iframe que Google Maps le proporciona. (Se guardará solo la URL del 'src').
+                            **Paso:** Pegue aquí el código iframe que Google Maps le proporciona.
                         </Form.Text>
                     </Form.Group>
                     
@@ -324,49 +518,6 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                     </Button>
                 </Form>
             </Modal.Body>
-        </Modal>
-    );
-};
-
-
-// ----------------------------------------------------
-// 🚨 COMPONENTE MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
-// ----------------------------------------------------
-
-interface ConfirmDeleteModalProps {
-    show: boolean;
-    handleClose: () => void;
-    handleDelete: () => void;
-    eventName: string;
-}
-
-const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, eventName }) => {
-    return (
-        <Modal show={show} onHide={handleClose} centered>
-            <Modal.Header closeButton style={{ backgroundColor: '#111', borderBottomColor: '#FF4444' }}>
-                <Modal.Title style={{ color: '#FF4444' }}>
-                    <AlertTriangle size={24} className="me-2"/> Confirmar Eliminación
-                </Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
-                <p>
-                    ¿Estás seguro de que deseas eliminar el evento{' '}
-                    <strong style={{ color: '#39FF14' }}>{eventName}</strong>?
-                </p>
-                <Alert variant="warning" className="mt-3">
-                    Esta acción no se puede deshacer.
-                </Alert>
-            </Modal.Body>
-
-            <Modal.Footer style={{ backgroundColor: '#111' }}>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cancelar
-                </Button>
-                <Button variant="danger" onClick={handleDelete}>
-                    Eliminar Evento
-                </Button>
-            </Modal.Footer>
         </Modal>
     );
 };
