@@ -59,13 +59,13 @@ describe('AuthContext: Gestión de Sesión y Persistencia', () => {
     });
 
 
-    it('1. should initialize state from localStorage on load', () => {
+    it('1. debería inicializar el estado desde el localStorage al cargar', () => {
         localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(mockAdminData));
         const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
         expect(result.current.isLoggedIn).toBe(true);
     });
 
-    it('2. login function should succeed and set user state', async () => {
+    it('2. la función de inicio de sesión debería tener éxito y establecer el estado del usuario', async () => {
         axiosPostMock.mockResolvedValue({ data: mockAdminData });
         const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
 
@@ -78,7 +78,7 @@ describe('AuthContext: Gestión de Sesión y Persistencia', () => {
         expect(localStorageMock.setItem).toHaveBeenCalled();
     });
 
-    it('3. login function should fail and not set user state', async () => {
+    it('3. la funcion de login deberia falla y no setear el estado', async () => {
         axiosPostMock.mockRejectedValue({ response: { status: 401 } });
         const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
 
@@ -91,7 +91,7 @@ describe('AuthContext: Gestión de Sesión y Persistencia', () => {
         expect(localStorageMock.removeItem).toHaveBeenCalled();
     });
 
-    it('4. logout function should clear user state and localStorage', () => {
+    it('4. la funcion de logout deberia limpiar el estado de usuario en el localstorage', () => {
         localStorageMock.setItem('user', JSON.stringify(mockAdminData));
         const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
 

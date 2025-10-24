@@ -42,3 +42,12 @@ npm run dev
 
 npm test
 # Opcional: npm test -- --coverage para ver el reporte de cobertura.
+
+#test con testing library para que genere el html
+npm test -- --reporter=html
+
+#test de covertura
+coverage/index.html
+
+#test que abre html con cositas para mover
+npx vitest --ui --coverage

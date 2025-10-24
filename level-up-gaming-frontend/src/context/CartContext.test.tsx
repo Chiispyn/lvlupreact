@@ -61,7 +61,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         vi.clearAllMocks();
     });
 
-    it('1. should initialize with an empty cart and count 0', () => {
+    it('1. Deberia inicializar con un carrito empty(vacio) y contar 0', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
         
         expect(result.current.cartCount).toBe(0);
@@ -69,7 +69,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.cartItems).toHaveLength(0);
     });
 
-    it('2. should add a product and calculate total price correctly', () => {
+    it('2.Deberia agregar un producto y calcular el precio correcto', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
 
         act(() => {
@@ -81,7 +81,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.cartItems).toHaveLength(1);
     });
 
-    it('3. should increase quantity of an existing item (up to stock limit)', () => {
+    it('3. Deberia incrementar la cantidad de un producto existente(hasta el limite de su stock)', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
 
         act(() => {
@@ -102,7 +102,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.totalPrice).toBe(100000); 
     });
     
-    it('4. should remove item when quantity is decreased to zero', () => {
+    it('4. deberia remover el item cuando la cantidad disminuye a 0', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
 
         act(() => {
@@ -114,7 +114,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.cartItems).toHaveLength(0);
     });
     
-    it('5. clearCart should empty the cart entirely', () => {
+    it('5. "Vaciar carrito" deberia vaciar el carrito completo', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
 
         act(() => {
@@ -127,7 +127,7 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.totalPrice).toBe(0);
     });
 
-    it('6. should handle adding a Redeemed (Points) item (price 0)', () => {
+    it('6. Deberia manejar la adicion de puntos a recompensas y dejar el producto en precio 0', () => {
         const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
 
         act(() => {

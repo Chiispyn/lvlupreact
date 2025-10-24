@@ -72,7 +72,7 @@ describe('🧪 ProductCard: comportamiento visual e interacción', () => {
   });
 
   // -----------------------------------------------------
-  it('1️⃣ Renderiza nombre, precio y botón "Añadir al Carrito"', () => {
+  it('1 Renderiza nombre, precio y botón "Añadir al Carrito"', () => {
     render(
       <Router>
         <ProductCard product={mockProduct as any} />
@@ -87,7 +87,7 @@ describe('🧪 ProductCard: comportamiento visual e interacción', () => {
   });
 
   // -----------------------------------------------------
-  it('2️⃣ Llama a addToCart al hacer clic', () => {
+  it('2️ Llama a addToCart al hacer clic', () => {
     render(
       <Router>
         <ProductCard product={mockProduct as any} />
@@ -102,7 +102,7 @@ describe('🧪 ProductCard: comportamiento visual e interacción', () => {
   });
 
   // -----------------------------------------------------
-  it('3️⃣ Muestra "AGOTADO" y desactiva el botón si no hay stock', () => {
+  it('3️ Muestra "AGOTADO" y desactiva el botón si no hay stock', () => {
     const outOfStockProduct = { ...mockProduct, countInStock: 0 };
 
     render(
@@ -117,7 +117,7 @@ describe('🧪 ProductCard: comportamiento visual e interacción', () => {
   });
 
   // -----------------------------------------------------
-  it('4️⃣ Muestra "EN CARRITO" si el producto ya fue agregado', () => {
+  it('4️ Muestra "EN CARRITO" si el producto ya fue agregado', () => {
     useCartMock.mockReturnValue({
       addToCart: mockAddToCart,
       cartItems: [{ product: mockProduct, quantity: 1 }],

@@ -3,7 +3,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
-// ✅ Configuración completa con reporter HTML para Vitest
 export default defineConfig({
   plugins: [react()],
 
@@ -24,13 +23,19 @@ export default defineConfig({
   // CONFIGURACIÓN DE PRUEBAS UNITARIAS (VITEST)
   // ======================================
   test: {
-    globals: true, // Habilita expect, describe, it globalmente
-    environment: 'jsdom', // Simula entorno del navegador
-    setupFiles: './src/setupTests.ts', // Config inicial (por ejemplo, jest-dom)
-    css: true, // Permite importar CSS sin errores
+    globals: true, // expect, describe, it disponibles globalmente
+    environment: 'jsdom', // Simula navegador
+    setupFiles: './src/setupTests.ts', // Config inicial (jest-dom, mocks, etc.)
+    css: true, // Permite importar CSS
 
-    // 🧾 Reporte visual tipo "Swagger" (HTML)
-    reporters: ['default', 'html'],
-    outputFile: 'test-report.html', // 📄 archivo generado en la raíz del proyecto
+    // 🧾 Reportes
+    reporters: ['default', 'html'], // genera consola + HTML visual
+
+    // 🧪 Cobertura de código
+    coverage: {
+      provider: 'v8', // Usa el motor V8 de Node (más rápido)
+      reporter: ['text', 'html', 'lcov'], // genera consola + HTML navegable
+      reportsDirectory: './coverage', // carpeta de salida
+    },
   },
 });
