@@ -142,4 +142,55 @@ describe('CartContext: Lógica de Carrito y Totales', () => {
         expect(result.current.totalPrice).toBe(10000); 
         expect(result.current.cartItems.find(i => i.isRedeemed)?.pointsCost).toBe(1000);
     });
+
+    it('7. Deberia disminuir la cantidad de un producto existente', () => {
+        const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
+
+        act(() => {
+            result.current.addToCart(mockProductA, 3);
+        });
+
+        act(() => {
+            result.current.decreaseQuantity(mockProductA.id);
+        });
+
+        expect(result.current.cartItems[0].quantity).toBe(2);
+        expect(result.current.totalPrice).toBe(20000);
+    });
+
+    it('8. Deberia eliminar un producto del carrito por completo', () => {
+        const { result } = renderHook(() => useCart(), { wrapper: MockWrapper });
+
+        act(() => {
+            result.current.addToCart(mockProductA, 1);
+            result.current.addToCart(mockProductB, 1);
+        });
+
+        act(() => {
+            result.current.removeFromCart(mockProductA.id);
+        });
+
+        expect(result.current.cartItems).toHaveLength(1);
+        expect(result.current.cartItems[0].product.id).toBe(mockProductB.id);
+        expect(result.current.totalPrice).toBe(50000);
+    });
+
+    it('9. Deberia persistir y cargar el carrito desde localStorage', () => {
+        const { result: initialResult } = renderHook(() => useCart(), { wrapper: MockWrapper });
+
+        act(() => {
+            initialResult.current.addToCart(mockProductA, 2);
+        });
+
+        // Debería haber guardado en localStorage
+        expect(localStorageMock.setItem).toHaveBeenCalledWith('cart', JSON.stringify(initialResult.current.cartItems));
+
+        // Renderizar un nuevo hook para simular la recarga de la página
+        const { result: finalResult } = renderHook(() => useCart(), { wrapper: MockWrapper });
+
+        expect(finalResult.current.cartItems).toHaveLength(1);
+        expect(finalResult.current.cartItems[0].product.id).toBe(mockProductA.id);
+        expect(finalResult.current.cartItems[0].quantity).toBe(2);
+        expect(finalResult.current.totalPrice).toBe(20000);
+    });
 });

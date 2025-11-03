@@ -102,4 +102,32 @@ describe('AuthContext: Gestión de Sesión y Persistencia', () => {
         expect(result.current.isLoggedIn).toBe(false);
         expect(localStorageMock.removeItem).toHaveBeenCalled();
     });
+
+    it('5. la función de registro debería tener éxito y establecer el estado del usuario', async () => {
+        axiosPostMock.mockResolvedValue({ data: mockAdminData });
+        const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
+
+        await act(async () => {
+            const success = await result.current.register('test@admin.com', 'pass', 'Admin Test');
+            expect(success).toBe(true);
+        });
+
+        expect(result.current.isLoggedIn).toBe(true);
+        expect(localStorageMock.setItem).toHaveBeenCalled();
+    });
+
+    it('6. la función de actualización de perfil debería tener éxito y actualizar el estado del usuario', async () => {
+        localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(mockAdminData));
+        const { result } = renderHook(() => useAuth(), { wrapper: MockWrapper });
+
+        const updatedUser = { ...mockAdminData, name: 'Updated Name' };
+        (axios.put as unknown as Mock).mockResolvedValue({ data: updatedUser });
+
+        await act(async () => {
+            await result.current.updateProfile({ name: 'Updated Name' });
+        });
+
+        expect(result.current.user?.name).toBe('Updated Name');
+        expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(updatedUser));
+    });
 });

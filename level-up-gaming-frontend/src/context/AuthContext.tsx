@@ -30,6 +30,8 @@ interface AuthContextType {
     isLoggedIn: boolean;
     login: (loginIdentifier: string, password: string) => Promise<boolean>;
     logout: () => void;
+    register: (name: string, email: string, password: string) => Promise<boolean>;
+    updateProfile: (userData: Partial<User>) => Promise<boolean>;
     // 🚨 Función para guardar el usuario tras registro o actualización de perfil (PUT)
     setUserFromRegistration: (userData: User) => void; 
 }
@@ -85,11 +87,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
     };
 
+    const register = async (name: string, email: string, password: string): Promise<boolean> => {
+        try {
+            const res = await axios.post('/api/users/register', { name, email, password });
+            const userData: User = res.data;
+            setUser(userData);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
+        try {
+            const res = await axios.put('/api/users/profile', userData, {
+                headers: {
+                    Authorization: `Bearer ${user?.token}`,
+                },
+            });
+            const updatedUserData: User = res.data;
+            setUser(updatedUserData);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
     const value = {
         user,
         isLoggedIn,
         login,
         logout,
+        register,
+        updateProfile,
         setUserFromRegistration, 
     };
 

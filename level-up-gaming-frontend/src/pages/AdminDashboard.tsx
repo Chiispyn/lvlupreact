@@ -143,9 +143,9 @@ const AdminDashboard: React.FC = () => {
                         <Card.Body>
                             <DollarSign size={24} style={{ color: '#39FF14' }}/>
                             <Card.Title className="mt-2" style={{ color: 'var(--color-gris-claro)' }}>Ingresos Totales</Card.Title>
-                            <Card.Text className="display-6" style={{ color: '#1E90FF' }}>
+                            <div className="display-6" style={{ color: '#1E90FF' }}>
                                 {loadingStock ? <Spinner animation="border" size="sm"/> : formatClp(totalRevenue)}
-                            </Card.Text>
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -154,9 +154,9 @@ const AdminDashboard: React.FC = () => {
                         <Card.Body>
                             <ShoppingCart size={24} style={{ color: '#1E90FF' }}/>
                             <Card.Title className="mt-2" style={{ color: 'var(--color-gris-claro)' }}>Órdenes Nuevas (Hoy)</Card.Title>
-                            <Card.Text className="display-6" style={{ color: '#39FF14' }}>
+                            <div className="display-6" style={{ color: '#39FF14' }}>
                                 {loadingStock ? <Spinner animation="border" size="sm"/> : ordersToday}
-                            </Card.Text>
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -165,9 +165,9 @@ const AdminDashboard: React.FC = () => {
                         <Card.Body>
                             <Package size={24} style={{ color: '#39FF14' }}/>
                             <Card.Title className="mt-2" style={{ color: 'var(--color-gris-claro)' }}>Producto Más Vendido</Card.Title>
-                            <Card.Text className="lead" style={{ color: '#1E90FF', fontWeight: 'bold' }}>
+                            <div className="lead" style={{ color: '#1E90FF', fontWeight: 'bold' }}>
                                 {loadingStock ? <Spinner animation="border" size="sm"/> : topSellingProductName}
-                            </Card.Text>
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>

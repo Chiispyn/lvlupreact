@@ -71,3 +71,29 @@ export default defineConfig([
   },
 ])
 ```
+
+## Testing
+
+The project uses [Vitest](https://vitest.dev/) for testing. The following tests have been implemented:
+
+### Client Mode
+
+- **ProductCard.test.tsx**: 4 tests for the product card component.
+- **CartContext.test.tsx**: 9 tests for the shopping cart context.
+- **AuthContext.test.tsx**: 6 tests for the authentication context.
+
+### Admin Mode
+
+- **AdminDashboard.test.tsx**: 6 tests for the admin dashboard page.
+
+To run the tests, use the following command:
+
+```bash
+npm test
+```
+
+To run the tests with coverage, use the following command:
+
+```bash
+npm run coverage
+```
