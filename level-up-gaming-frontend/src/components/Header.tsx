@@ -1,11 +1,12 @@
 // level-up-gaming-frontend/src/components/Header.tsx
 
 import React from 'react';
-import { Navbar, Container, Nav, NavDropdown } from 'react-bootstrap';
+import { Navbar, Container, Nav } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, LogIn, User, ShoppingBag } from 'react-feather'; 
+import { ShoppingCart, LogIn } from 'react-feather'; 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import UserDropdown from './UserDropdown'; // Importar el nuevo componente
 
 // 🚨 URL del logo, accesible desde la carpeta /public
 const LOGO_URL = '/images/logo.png'; 
@@ -19,34 +20,6 @@ const Header: React.FC = () => {
         logout(); // Cierra la sesión
         navigate('/'); // Redirige al inicio
     };
-    
-    // Definición del Menú Desplegable para Usuarios Logueados
-    const UserDropdown = (
-        <NavDropdown 
-            title={user ? user.name : 'Usuario'} 
-            id="user-nav-dropdown"
-            align="end"
-            className="ms-2" 
-        >
-            {user && user.role === 'admin' && (
-                <NavDropdown.Item as={Link} to="/admin">
-                    Panel Admin
-                </NavDropdown.Item>
-            )}
-            <NavDropdown.Item as={Link} to="/profile">
-                <User size={16} className="me-2"/> Mi Perfil
-            </NavDropdown.Item>
-            {/* Historial de Compras */}
-            <NavDropdown.Item as={Link} to="/myorders">
-                <ShoppingBag size={16} className="me-2"/> Mis Órdenes
-            </NavDropdown.Item>
-            
-            <NavDropdown.Divider />
-            <NavDropdown.Item onClick={handleLogout}>
-                Cerrar Sesión
-            </NavDropdown.Item>
-        </NavDropdown>
-    );
 
     return (
         <Navbar bg="dark"  expand="lg" sticky="top">
@@ -79,7 +52,7 @@ const Header: React.FC = () => {
 
                         {/* LÓGICA CONDICIONAL: Muestra UserDropdown o Botón de Login */}
                         {isLoggedIn ? (
-                            UserDropdown
+                            <UserDropdown user={user} onLogout={handleLogout} />
                         ) : (
                             <Link 
                                 to="/login" 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Container, Row, Col, Nav } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
     const currentYear = new Date().getFullYear();
@@ -19,9 +20,9 @@ const Footer: React.FC = () => {
                     <Col md={4} className="mb-3">
                         <h5 style={{ color: 'var(--color-verde-neon)' }}>Enlaces</h5>
                         <Nav className="flex-column">
-                            <Nav.Link href="/sobre-nosotros" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Sobre Nosotros</Nav.Link>
-                            <Nav.Link href="/politica-privacidad" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Política de Privacidad</Nav.Link>
-                            <Nav.Link href="/terminos-servicio" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Términos de Servicio</Nav.Link>
+                            <Nav.Link as={Link} to="/sobre-nosotros" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Sobre Nosotros</Nav.Link>
+                            <Nav.Link as={Link} to="/politica-privacidad" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Política de Privacidad</Nav.Link>
+                            <Nav.Link as={Link} to="/terminos-servicio" className="p-0" style={{ color: 'var(--color-gris-claro)' }}>Términos de Servicio</Nav.Link>
                         </Nav>
                     </Col>
 

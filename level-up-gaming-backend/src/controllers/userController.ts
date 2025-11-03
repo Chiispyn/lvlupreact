@@ -1,10 +1,11 @@
 // level-up-gaming-backend/src/controllers/userController.ts
 
 import { type Request, type Response } from 'express';
-import { mockUsers, type User } from '../data/userData'; 
-import { v4 as uuidv4 } from 'uuid'; 
+import { type User } from '../data/userData';
+import { v4 as uuidv4 } from 'uuid';
+import { readFromDb, writeToDb } from '../utils/dbUtils';
 
-// Función auxiliar para generar un código de referido simple
+// --- FUNCIONES AUXILIARES ---
 const generateReferralCode = (name: string) => {
     const namePrefix = name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -14,15 +15,14 @@ const generateReferralCode = (name: string) => {
 // ----------------------------------------------------
 // LÓGICA DE AUTENTICACIÓN
 // ----------------------------------------------------
-
 const authUser = (req: Request, res: Response) => {
     const { loginIdentifier, password } = req.body;
-    const user = mockUsers.find(
+    const users = readFromDb<User>('users');
+    const user = users.find(
         u => u.email === loginIdentifier || u.name === loginIdentifier
     );
     
-    // Verificar si el usuario existe, si la contraseña es correcta, y si la cuenta está activa
-    if (user && user.password === password && user.isActive) { 
+    if (user && user.password === password && user.isActive) {
         res.json(user);
         return;
     }
@@ -35,46 +35,43 @@ const authUser = (req: Request, res: Response) => {
 };
 
 // ----------------------------------------------------
-// LÓGICA DE REGISTRO DE CLIENTE (CON REFERIDO Y DESCUENTO)
+// LÓGICA DE REGISTRO DE CLIENTE
 // ----------------------------------------------------
-
 const registerUser = (req: Request, res: Response) => {
-    const { name, email, password, rut, age, address, referredBy } = req.body; 
+    const { name, email, password, rut, age, address, referredBy } = req.body;
+    const users = readFromDb<User>('users');
 
-    if (mockUsers.some(u => u.email === email)) {
+    if (users.some(u => u.email === email)) {
         return res.status(400).json({ message: 'El correo ya está registrado.' });
     }
     
-    // Verificación de descuento DUOCUC.CL
-    const hasDuocDiscount = email.toLowerCase().endsWith('@duocuc.cl');
+    const hasDuocDiscount = email.toLowerCase().endsWith('@duoc.cl') || email.toLowerCase().endsWith('@duocuc.cl');
     
-    let startingPoints = 100; // Puntos base
-    const referralCode = generateReferralCode(name); 
+    let startingPoints = 100;
+    const referralCode = generateReferralCode(name);
 
-    // 2. VERIFICACIÓN Y ASIGNACIÓN DE PUNTOS POR REFERIDO
     if (referredBy) {
-        const referringUserIndex = mockUsers.findIndex(u => u.referralCode === referredBy);
-        
+        const referringUserIndex = users.findIndex(u => u.referralCode === referredBy);
         if (referringUserIndex !== -1) {
             startingPoints += 50;
-            mockUsers[referringUserIndex].points += 50; // Suma puntos al referente
+            users[referringUserIndex].points += 50;
         }
     }
-
 
     if (!address || !address.street || !address.city || !address.region) {
         return res.status(400).json({ message: 'Faltan datos de dirección para el registro.' });
     }
 
     const newUser: User = {
-        id: uuidv4(), name: name, email: email, password: password, 
-        rut: rut, age: parseInt(age), role: 'customer', token: `MOCK_CUSTOMER_TOKEN_${uuidv4().slice(0, 8)}`,
-        hasDuocDiscount: hasDuocDiscount, points: startingPoints, referralCode: referralCode,
-        address: address, 
-        isActive: true, // 🚨 Nuevo campo: activo por defecto
+        id: uuidv4(), name, email, password, 
+        rut, age: parseInt(age), role: 'customer', token: `MOCK_CUSTOMER_TOKEN_${uuidv4().slice(0, 8)}`,
+        hasDuocDiscount, points: startingPoints, referralCode,
+        address, 
+        isActive: true,
     };
 
-    mockUsers.push(newUser); 
+    users.push(newUser);
+    writeToDb<User>('users', users);
 
     res.status(201).json(newUser);
 };
@@ -82,31 +79,26 @@ const registerUser = (req: Request, res: Response) => {
 // ----------------------------------------------------
 // LÓGICA DE EDICIÓN DE PERFIL DEL CLIENTE
 // ----------------------------------------------------
-
 const updateUserProfile = (req: Request, res: Response) => {
-    const { userId } = req.params; // Usamos params para obtener el ID de la URL
-    // 🚨 Obtener newPassword del body
-    const { name, age, address, newPassword } = req.body; 
-    
-    const userIndex = mockUsers.findIndex(u => u.id === userId); 
+    const { userId } = req.params;
+    const { name, age, address, newPassword } = req.body;
+    const users = readFromDb<User>('users');
+    const userIndex = users.findIndex(u => u.id === userId);
 
     if (userIndex !== -1) {
-        const user = mockUsers[userIndex];
-        
-        // 🚨 LÓGICA DE CONTRASEÑA: Si se proporciona una nueva, la actualizamos
-        const updatedPassword = newPassword && newPassword.length >= 6 
-            ? newPassword 
-            : user.password;
+        const user = users[userIndex];
+        const updatedPassword = newPassword && newPassword.length >= 6 ? newPassword : user.password;
 
-        mockUsers[userIndex] = {
+        users[userIndex] = {
             ...user,
             name: name || user.name,
             age: parseInt(age) || user.age,
             address: address || user.address,
-            password: updatedPassword, // Actualización del campo
+            password: updatedPassword,
         };
         
-        const updatedUser = mockUsers[userIndex];
+        writeToDb<User>('users', users);
+        const updatedUser = users[userIndex];
 
         res.json({
             id: updatedUser.id, name: updatedUser.name, email: updatedUser.email,
@@ -121,122 +113,112 @@ const updateUserProfile = (req: Request, res: Response) => {
     res.status(404).json({ message: 'Usuario no encontrado para actualizar.' });
 };
 
-
 // ----------------------------------------------------
-// LÓGICA DE ADMINISTRACIÓN: CREACIÓN Y EDICIÓN
+// LÓGICA DE ADMINISTRACIÓN: OBTENER, CREAR Y EDITAR
 // ----------------------------------------------------
+const getUsers = (req: Request, res: Response) => {
+    const users = readFromDb<User>('users');
+    res.json(users);
+};
 
 const createUser = (req: Request, res: Response) => {
-    const { name, email, password, role, rut, age, address } = req.body; 
+    const { name, email, password, role, rut, age, address } = req.body;
+    const users = readFromDb<User>('users');
 
-    if (mockUsers.some(u => u.email === email)) {
+    if (users.some(u => u.email === email)) {
         return res.status(400).json({ message: 'El correo ya está registrado.' });
     }
 
     const newUser: User = {
-        id: uuidv4(), name: name, email: email, password: password, 
+        id: uuidv4(), name, email, password, 
         rut: rut || 'NO ASIGNADO', age: parseInt(age) || 0, 
         role: role, token: `MOCK_ADMIN_CREATED_${uuidv4().slice(0, 8)}`,
-        hasDuocDiscount: email.toLowerCase().endsWith('@duocuc.cl'), 
+        hasDuocDiscount: email.toLowerCase().endsWith('@duoc.cl') || email.toLowerCase().endsWith('@duocuc.cl'), 
         points: 0, referralCode: generateReferralCode(name), 
         address: address || { street: 'N/A', city: 'N/A', region: 'N/A', zipCode: 'N/A' }, 
-        isActive: true, // Activo por defecto
+        isActive: true,
     };
 
-    mockUsers.push(newUser); 
-    res.status(201).json(newUser); 
+    users.push(newUser);
+    writeToDb<User>('users', users);
+    res.status(201).json(newUser);
 };
 
 const updateUserByAdmin = (req: Request, res: Response) => {
     const { id } = req.params;
-    // 🚨 Recibir la nueva contraseña y los demás campos
-    const { name, email, role, rut, age, address, newPassword } = req.body; 
-    
-    const userIndex = mockUsers.findIndex(u => u.id === id);
+    const { name, email, role, rut, age, address, newPassword } = req.body;
+    const users = readFromDb<User>('users');
+    const userIndex = users.findIndex(u => u.id === id);
 
     if (userIndex !== -1) {
-        if (id === 'u1' && role !== mockUsers[userIndex].role) {
+        if (id === 'u1' && role !== users[userIndex].role) {
             return res.status(403).json({ message: 'No se puede cambiar el rol del administrador principal.' });
         }
         
-        // 🚨 LÓGICA DE CONTRASEÑA para Admin: Si se proporciona una, la actualizamos
-        const updatedPassword = newPassword && newPassword.length >= 6 
-            ? newPassword 
-            : mockUsers[userIndex].password;
+        const updatedPassword = newPassword && newPassword.length >= 6 ? newPassword : users[userIndex].password;
 
-        mockUsers[userIndex] = {
-            ...mockUsers[userIndex],
-            name: name || mockUsers[userIndex].name,
-            email: email || mockUsers[userIndex].email,
-            role: role || mockUsers[userIndex].role,
-            rut: rut || mockUsers[userIndex].rut,
-            age: parseInt(age) || mockUsers[userIndex].age,
-            address: address || mockUsers[userIndex].address,
-            password: updatedPassword, // 🚨 Actualización del campo
+        users[userIndex] = {
+            ...users[userIndex],
+            name: name || users[userIndex].name,
+            email: email || users[userIndex].email,
+            role: role || users[userIndex].role,
+            rut: rut || users[userIndex].rut,
+            age: parseInt(age) || users[userIndex].age,
+            address: address || users[userIndex].address,
+            password: updatedPassword,
         };
 
-        const updatedUser = mockUsers[userIndex];
-        res.json(updatedUser); 
+        writeToDb<User>('users', users);
+        res.json(users[userIndex]);
         return;
     }
 
     res.status(404).json({ message: 'Usuario no encontrado para actualizar.' });
 };
 
-const getUsers = (req: Request, res: Response) => {
-    res.json(mockUsers);
-};
-
-
 // ----------------------------------------------------
-// FUNCIÓN DE PUNTOS Y TOGGLE DE ESTADO (Desactivación Lógica)
+// FUNCIÓN DE PUNTOS Y TOGGLE DE ESTADO
 // ----------------------------------------------------
-
 const updatePoints = (req: Request, res: Response) => {
     const { id } = req.params;
-    const { pointsToAdd } = req.body; 
-
-    const userIndex = mockUsers.findIndex(u => u.id === id);
+    const { pointsToAdd } = req.body;
+    const users = readFromDb<User>('users');
+    const userIndex = users.findIndex(u => u.id === id);
 
     if (userIndex !== -1 && pointsToAdd !== 0) {
-        const currentPoints = mockUsers[userIndex].points;
+        const currentPoints = users[userIndex].points;
         const newBalance = currentPoints + pointsToAdd;
 
         if (newBalance < 0) {
             return res.status(400).json({ message: 'Puntos insuficientes para realizar la operación.' });
         }
         
-        mockUsers[userIndex].points = newBalance; 
-
-        const updatedUser = mockUsers[userIndex];
-        res.json(updatedUser);
+        users[userIndex].points = newBalance;
+        writeToDb<User>('users', users);
+        res.json(users[userIndex]);
         return;
     }
 
     res.status(404).json({ message: 'Usuario no encontrado o cambio de puntos inválido.' });
 };
 
-
-// @route   PUT /api/users/:id/status
 const toggleUserStatus = (req: Request, res: Response) => {
     const { id } = req.params;
-    const { isActive } = req.body; // Recibe el nuevo estado (true/false)
-
-    const userIndex = mockUsers.findIndex(u => u.id === id);
+    const { isActive } = req.body;
+    const users = readFromDb<User>('users');
+    const userIndex = users.findIndex(u => u.id === id);
 
     if (userIndex !== -1) {
         if (id === 'u1') {
             return res.status(403).json({ message: 'No se puede desactivar al administrador principal.' });
         }
         
-        mockUsers[userIndex].isActive = isActive; // 🚨 CAMBIO DE ESTADO LÓGICO
-        
-        res.json(mockUsers[userIndex]);
+        users[userIndex].isActive = isActive;
+        writeToDb<User>('users', users);
+        res.json(users[userIndex]);
         return;
     }
     res.status(404).json({ message: 'Usuario no encontrado.' });
 };
 
-
-// 🚨 EXPORTACIÓN FINAL COMPLETA DE TODAS LAS FUNCIONES
 export { authUser, registerUser, updateUserProfile, getUsers, createUser, updateUserByAdmin, updatePoints, toggleUserStatus };

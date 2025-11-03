@@ -1,0 +1,22 @@
+[
+    {
+        "id": "u1",
+        "name": "Administrador Principal",
+        "email": "admin@levelup.com",
+        "password": "admin123",
+        "rut": "123456789",
+        "age": 35,
+        "role": "admin",
+        "token": "MOCK_ADMIN_TOKEN_123",
+        "hasDuocDiscount": true,
+        "points": 1290,
+        "referralCode": "ADMIN1000",
+        "isActive": true,
+        "address": {
+            "street": "Paicaví 3280",
+            "city": "Concepción",
+            "region": "Biobío",
+            "zipCode": "4030000"
+        }
+    }
+]

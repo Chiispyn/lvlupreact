@@ -1,53 +1,87 @@
-# 🎮 Level-Up Gaming E-commerce (Fullstack Mocking - Experiencia 2)
+# 🎮 Level-Up Gaming E-commerce
 
-Este proyecto es una aplicación de comercio electrónico Fullstack desarrollada con **React, TypeScript, y Node.js/Express**, utilizando una arquitectura de microservicios con **Mocking de API** para simular la persistencia de datos y el flujo de la Experiencia 2.
+Este proyecto es una aplicación de comercio electrónico Fullstack para la tienda "Level-Up Gamer", un destino online para entusiastas de los videojuegos en Chile. El proyecto está desarrollado con React, TypeScript y Node.js/Express.
+
+## ✨ Características Principales
+
+- **Arquitectura Frontend/Backend Separada**: Desarrollo modular y escalable.
+- **Persistencia de Datos sin Base de Datos**: Los datos de usuarios y órdenes se guardan en archivos `.json`, sobreviviendo a reinicios del servidor.
+- **Sistema de Cuentas de Usuario**: Registro, inicio de sesión y actualización de perfiles.
+- **Gestión de Órdenes**: Creación y seguimiento de órdenes de compra.
+- **Sistema de Puntos de Fidelidad**: Los usuarios ganan puntos por registrarse, por referidos y, más importante, **por cada compra realizada**.
 
 ## ⚙️ Stack Tecnológico
 
 | Componente | Tecnología | Propósito |
 | :--- | :--- | :--- |
-| **Frontend** | **React, TypeScript, Vitest, React Router, Axios** | Interfaz dinámica, gestión de estado (Carrito/Auth) y pruebas unitarias. |
-| **Backend** | **Node.js, Express, TypeScript, SWC** | Servidor API RESTful simulando CRUD para Productos, Usuarios, y Órdenes. |
-| **Estilos** | **React-Bootstrap** | Diseño responsivo con tema Dark Mode/Neon dinámico. |
+| **Frontend** | React, TypeScript, Vite, React Router | Interfaz de usuario dinámica y gestión de estado del lado del cliente. |
+| **Backend** | Node.js, Express, TypeScript, SWC | Servidor API RESTful para gestionar usuarios, órdenes y productos. |
+| **Estilos** | React-Bootstrap | Diseño responsivo con un tema oscuro y acentos de neón. |
 
 ---
 
-## 🚀 Montaje y Ejecución del Proyecto
+## 💾 Persistencia de Datos (Backend)
 
-El proyecto requiere **dos servidores separados** para funcionar (Frontend en 5173 y Backend en 5000).
+Este proyecto **simula una base de datos utilizando archivos JSON**, lo que permite que los datos sean persistentes sin necesidad de configurar un motor de base de datos completo.
 
-### 1. Requisitos Iniciales (En Cualquier Computador)
+- **Ubicación**: `level-up-gaming-backend/src/db/`
+- **Archivos**: 
+    - `users.json`: Almacena todos los usuarios registrados, incluyendo el administrador de prueba. Aquí se actualizan los puntos de fidelidad.
+    - `orders.json`: Almacena todas las órdenes de compra generadas.
 
-1.  Asegúrese de tener **Node.js (v18+)** y **npm** instalados.
-2.  Las imágenes estáticas de la tienda (ej: `logo.png`, `ps5.png`) deben estar en la carpeta **`level-up-gaming-frontend/public/images/`**.
+Este enfoque hace que el proyecto sea completamente portable y funcional por sí mismo.
 
-### 2. Inicio del Backend (Terminal 1)
+---
 
-El servidor de API Mocking (datos de productos, usuarios, órdenes).
+## 🚀 Cómo Ejecutar el Proyecto
+
+El proyecto requiere que se ejecuten **dos servidores por separado**: uno para el Frontend y otro para el Backend.
+
+### Requisitos
+- **Node.js** (se recomienda v18 o superior)
+- **npm** (generalmente se instala con Node.js)
+
+### 1. Iniciar el Servidor Backend (Terminal 1)
 
 ```bash
-# 1. Navegar y limpiar dependencias
+# Navegar a la carpeta del backend
 cd level-up-gaming-backend
-del /s /q node_modules package-lock.json 
-npm install
-# 2. Iniciar el servidor Express (Asegurar puerto 5000)
-npm run dev
 
-# 1. Navegar y limpiar dependencias
-cd ../level-up-gaming-frontend
-del /s /q node_modules package-lock.json 
+# Instalar dependencias (solo la primera vez)
 npm install
-# 2. Iniciar la Aplicación
-npm run dev
 
+# Iniciar el servidor en modo de desarrollo (en http://localhost:5000)
+npm run dev
+```
+
+### 2. Iniciar la Aplicación Frontend (Terminal 2)
+
+```bash
+# Navegar a la carpeta del frontend
+cd level-up-gaming-frontend
+
+# Instalar dependencias (solo la primera vez)
+npm install
+
+# Iniciar la aplicación de React (en http://localhost:5173)
+npm run dev
+```
+
+Una vez completados estos pasos, abre tu navegador y visita `http://localhost:5173`.
+
+---
+
+## 🧪 Cómo Ejecutar las Pruebas (Frontend)
+
+Para ejecutar los tests unitarios y de integración del frontend, usa los siguientes comandos dentro de la carpeta `level-up-gaming-frontend`:
+
+```bash
+# Ejecutar los tests una vez en la terminal
 npm test
-# Opcional: npm test -- --coverage para ver el reporte de cobertura.
 
-#test con testing library para que genere el html
-npm test -- --reporter=html
+# Ejecutar tests y abrir la UI de Vitest para una vista interactiva
+npx vitest --ui
 
-#test de covertura
-coverage/index.html
-
-#test que abre html con cositas para mover
-npx vitest --ui --coverage
+# Generar un reporte de cobertura de tests
+npm test -- --coverage
+```

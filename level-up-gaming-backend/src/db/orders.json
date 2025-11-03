@@ -1,0 +1,101 @@
+[
+    {
+        "id": "361ae39c-fe5a-4202-8e77-8822403efc76",
+        "userId": "u1",
+        "items": [
+            {
+                "product": {
+                    "id": "JM001",
+                    "name": "Catan",
+                    "description": "Un clásico juego de estrategia donde los jugadores compiten por colonizar y expandirse en la isla de Catan. Perfecto para 3-4 jugadores, con una duración promedio de 60-90 minutos.",
+                    "price": 29990,
+                    "imageUrl": "/images/juego-catan.png",
+                    "rating": 4.8,
+                    "numReviews": 156,
+                    "isTopSelling": true,
+                    "countInStock": 20,
+                    "category": "Juegos de Mesa",
+                    "specifications": "{\"Jugadores\": \"3-4\", \"Tiempo\": \"60-90 min\", \"Estrategia\": \"Alta\"}",
+                    "reviews": [
+                        {
+                            "id": "r1-1",
+                            "name": "Carlos M.",
+                            "rating": 5,
+                            "comment": "Excelente juego, muy entretenido para jugar en familia.",
+                            "createdAt": "2024-11-15T00:00:00Z"
+                        },
+                        {
+                            "id": "r1-2",
+                            "name": "María P.",
+                            "rating": 5,
+                            "comment": "Mi juego favorito! Siempre es diferente cada partida.",
+                            "createdAt": "2024-11-10T00:00:00Z"
+                        }
+                    ]
+                },
+                "quantity": 1,
+                "isRedeemed": false,
+                "pointsCost": 0
+            }
+        ],
+        "shippingAddress": {
+            "street": "Paicaví 3280",
+            "city": "Concepción",
+            "region": "Biobío",
+            "zipCode": "4030000",
+            "notes": "saddsa"
+        },
+        "paymentMethod": "webpay",
+        "totalPrice": 33992,
+        "shippingPrice": 10000,
+        "isPaid": true,
+        "status": "Entregado",
+        "createdAt": "2025-11-03T05:18:22.859Z"
+    },
+    {
+        "id": "1cb32601-8e7b-4cbe-a902-59010f68c55b",
+        "userId": "u1",
+        "items": [
+            {
+                "product": {
+                    "id": "AC001",
+                    "name": "Controlador Inalámbrico Xbox Series X",
+                    "description": "Ofrece una experiencia de juego cómoda con botones mapeables y una respuesta táctil mejorada.",
+                    "price": 59990,
+                    "imageUrl": "/images/controlador-xbox.png",
+                    "rating": 4.9,
+                    "numReviews": 215,
+                    "isTopSelling": true,
+                    "countInStock": 40,
+                    "category": "Accesorios",
+                    "specifications": "{\"Conectividad\": \"Inalámbrica/Bluetooth\", \"Batería\": \"AA/Recargable\"}",
+                    "reviews": [
+                        {
+                            "id": "r3-1",
+                            "name": "Pedro A.",
+                            "rating": 5,
+                            "comment": "Es el mejor control que he tenido.",
+                            "createdAt": "2024-11-25T00:00:00Z"
+                        }
+                    ]
+                },
+                "quantity": 1,
+                "isRedeemed": false,
+                "pointsCost": 0
+            }
+        ],
+        "shippingAddress": {
+            "street": "asdasd",
+            "city": "Maullín",
+            "region": "Los Lagos",
+            "zipCode": "",
+            "notes": "asdasd"
+        },
+        "paymentMethod": "webpay",
+        "totalPrice": 57992,
+        "shippingPrice": 10000,
+        "isPaid": true,
+        "status": "Pendiente",
+        "createdAt": "2025-11-03T05:37:16.838Z"
+    }
+]
