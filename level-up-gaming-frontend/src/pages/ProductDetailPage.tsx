@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Spinner, Alert, Image, Button, Badge, ListGroup } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import ReviewsSection from '../components/ReviewsSection'; 
 import { Product, Review } from '../types/Product'; // 🚨 Importamos Review y Product
 import { ShoppingCart, Star, ArrowLeft } from 'react-feather';
@@ -118,7 +119,7 @@ const ProductDetailPage: React.FC = () => {
 
     const handleAddToCart = () => {
         addToCart(product);
-        alert(`${product.name} añadido al carrito!`);
+        toast.success(`${product.name} añadido al carrito!`);
     };
 
 

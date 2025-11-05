@@ -5,7 +5,10 @@ import { Container, Table, Alert, Spinner, Badge, Button } from 'react-bootstrap
 import { useAuth } from '../context/AuthContext';
 import { ShoppingBag, Calendar, Download } from 'react-feather'; 
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom'; 
+
+import InvoiceModal from '../components/InvoiceModal';
 
 // Interfaces de la Orden (deben coincidir con el Backend)
 interface ShippingAddress { street: string; city: string; region: string; zipCode?: string; }
@@ -32,6 +35,8 @@ const MyOrdersPage: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
     // Redirigir si no está logueado
     useEffect(() => {
@@ -58,8 +63,9 @@ const MyOrdersPage: React.FC = () => {
     }, [user]);
 
     // Función que simula la descarga de la boleta (para el botón de la tabla)
-    const handleDownloadInvoice = (orderId: string) => {
-        alert(`Simulación: Generando Boleta #${orderId.slice(0, 8)}. El documento está listo desde la confirmación de pago.`);
+    const handleDownloadInvoice = (order: Order) => {
+        setSelectedOrder(order);
+        setShowInvoiceModal(true);
     };
 
     // Función auxiliar para el color del Badge
@@ -114,7 +120,7 @@ const MyOrdersPage: React.FC = () => {
                                 
                                 <td>
                                     {/* 🚨 CORRECCIÓN: Botón activo si la orden existe */}
-                                    <Button variant="outline-success" size="sm" onClick={() => handleDownloadInvoice(order.id)}>
+                                    <Button variant="outline-success" size="sm" onClick={() => handleDownloadInvoice(order)}>
                                         <Download size={14} className="me-1" /> Descargar
                                     </Button>
                                 </td>
@@ -123,6 +129,12 @@ const MyOrdersPage: React.FC = () => {
                     </tbody>
                 </Table>
             )}
+
+            <InvoiceModal 
+                show={showInvoiceModal}
+                handleClose={() => setShowInvoiceModal(false)}
+                order={selectedOrder}
+            />
         </Container>
     );
 };

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card, ListGroup } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, ShoppingCart, Check, X, Truck, DollarSign, AlertTriangle } from 'react-feather';
+import { Edit, ArrowLeft } from 'react-feather';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -183,11 +183,19 @@ const StatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => {
 
 // Selector de Estado Rápido
 const StatusSelect: React.FC<{ status: Order['status']; onUpdate: (id: string, status: string) => void; orderId: string }> = ({ status, onUpdate, orderId }) => {
+    const isFinal = status === 'Entregado' || status === 'Cancelado';
+
     return (
         <Form.Select
             value={status}
             onChange={(e) => onUpdate(orderId, e.target.value)}
-            style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+            disabled={isFinal}
+            style={{
+                backgroundColor: isFinal ? '#444' : '#333',
+                color: isFinal ? '#999' : 'white',
+                borderColor: '#555',
+                cursor: isFinal ? 'not-allowed' : 'pointer'
+            }}
         >
             {STATUS_OPTIONS.map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
@@ -195,7 +203,6 @@ const StatusSelect: React.FC<{ status: Order['status']; onUpdate: (id: string, s
         </Form.Select>
     );
 };
-
 
 // Modal de Detalles y Edición
 interface OrderDetailsModalProps { order: Order | null; show: boolean; handleClose: () => void; handleUpdateStatus: (id: string, status: string) => void; }

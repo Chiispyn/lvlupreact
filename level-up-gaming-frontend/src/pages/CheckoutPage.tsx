@@ -1,12 +1,12 @@
 // level-up-gaming-frontend/src/pages/CheckoutPage.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Form, Card, ListGroup, Alert, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Button, Form, Card, ListGroup, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth, User as AuthUser } from '../context/AuthContext';
 import axios from 'axios';
-import { Truck, CreditCard, CheckCircle, Download } from 'react-feather'; 
+import { Truck, CreditCard, CheckCircle } from 'react-feather'; 
 // 🚨 IMPORTACIÓN CRÍTICA DEL JSON LOCAL
 import CHILEAN_REGIONS_DATA from '../data/chile_regions.json';
 
@@ -127,6 +127,9 @@ const OrderSummary: React.FC<SummaryProps> = ({ subtotal, shippingPrice, discoun
 };
 
 
+import InvoiceModal from '../components/InvoiceModal';
+
+
 // ----------------------------------------------------
 // PÁGINA PRINCIPAL DE CHECKOUT
 // ----------------------------------------------------
@@ -143,7 +146,7 @@ const CheckoutPage: React.FC = () => {
     const [paymentMethod, setPaymentMethod] = useState<'webpay' | 'transferencia' | 'efectivo'>('webpay');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [orderId, setOrderId] = useState<string | null>(null);
+    const [order, setOrder] = useState<Order | null>(null);
     
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     
@@ -269,7 +272,7 @@ const CheckoutPage: React.FC = () => {
             };
 
             const resOrder = await axios.post<Order>('/api/orders', payload);
-            const createdOrderId = resOrder.data.id;
+            const createdOrder = resOrder.data;
             
             // 2. ACTUALIZAR PUNTOS DEL USUARIO (Ganancia neta)
             if (user && netPointsChange !== 0) {
@@ -278,8 +281,8 @@ const CheckoutPage: React.FC = () => {
             }
 
             // 3. ABRIR MODAL Y FINALIZAR
-            handleDownloadInvoice(createdOrderId); 
-            setOrderId(createdOrderId);
+            handleDownloadInvoice(createdOrder.id); 
+            setOrder(createdOrder);
             setShowInvoiceModal(true); 
 
         } catch (error: any) {
@@ -443,7 +446,7 @@ const CheckoutPage: React.FC = () => {
         <Card className="p-5 text-center shadow-lg" style={{ backgroundColor: '#111', border: '2px solid #39FF14', color: 'white' }}>
             <CheckCircle size={80} color="#39FF14" className="mb-4 mx-auto"/>
             <h2 className="mb-3" style={{ color: '#39FF14' }}>¡Compra Finalizada con Éxito!</h2>
-            <p className="lead">Tu orden #{orderId} ha sido procesada.</p>
+            <p className="lead">Tu orden #{order?.id} ha sido procesada.</p>
             <p className="text-muted">Revisa tu historial de órdenes para ver los detalles completos.</p>
             
             <div className="d-flex justify-content-center mt-4">
@@ -503,10 +506,7 @@ const CheckoutPage: React.FC = () => {
             <InvoiceModal 
                 show={showInvoiceModal}
                 handleClose={() => setShowInvoiceModal(false)}
-                orderId={orderId}
-                totalOrder={totalOrder}
-                shippingAddress={shippingAddress}
-                cartItems={cartItems}
+                order={order}
                 // Pasar las funciones de avance al modal
                 setStep={setStep}
                 clearCart={clearCart}
@@ -517,79 +517,3 @@ const CheckoutPage: React.FC = () => {
 };
 
 export default CheckoutPage;
-
-
-// ----------------------------------------------------
-// COMPONENTE MODAL DE BOLETA (Simula el PDF)
-// ----------------------------------------------------
-
-interface InvoiceModalProps {
-    show: boolean;
-    handleClose: () => void;
-    orderId: string | null;
-    totalOrder: number;
-    shippingAddress: ShippingAddress;
-    cartItems: CartItem[];
-    // Props de avance
-    setStep: (step: number) => void;
-    clearCart: () => void;
-}
-
-const InvoiceModal: React.FC<InvoiceModalProps> = ({ show, handleClose, orderId, totalOrder, shippingAddress, cartItems, setStep, clearCart }) => {
-    
-    // Función que limpia el carrito, cierra el modal y avanza
-    const handleCloseAndAdvance = () => {
-        clearCart(); 
-        handleClose(); 
-        setStep(4); // AVANZAR EL PASO A LA CONFIRMACIÓN FINAL
-    };
-
-    const handlePrint = () => {
-        window.print(); 
-    };
-
-    // Aseguramos que el modal no se cierre accidentalmente con click
-    if (!orderId) return null;
-
-    return (
-        <Modal show={show} onHide={handleCloseAndAdvance} size="lg" centered id="invoiceModal">
-            <Modal.Header closeButton style={{ backgroundColor: '#000', borderBottomColor: '#39FF14' }}>
-                <Modal.Title style={{ color: '#39FF14' }}>
-                    <Download size={24} className="me-2"/> BOLETA ELECTRÓNICA #{orderId?.slice(0, 8)}
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body style={{ backgroundColor: '#222', color: 'white' }}>
-                <Alert variant="success" style={{ backgroundColor: '#333', border: '1px solid #39FF14', color: 'white' }}>
-                    ¡Pago Exitoso! Este es tu comprobante de compra.
-                </Alert>
-                
-                <h5 style={{ color: '#1E90FF' }}>Detalles de Envío</h5>
-                <p className="text-muted mb-3">
-                    Orden #: {orderId?.slice(0, 8)}... <br/>
-                    Dirección: {shippingAddress.street}, {shippingAddress.city}, {shippingAddress.region}
-                </p>
-                
-                <h5 style={{ color: '#1E90FF' }}>Productos</h5>
-                <ListGroup className="mb-4">
-                    {cartItems.map((item, index) => (
-                        <ListGroup.Item key={index} className="d-flex justify-content-between" style={{ backgroundColor: 'transparent', color: 'white', borderBottomColor: '#333' }}>
-                            <span>{item.product.name}</span>
-                            <strong>x{item.quantity}</strong>
-                            <span style={{ color: '#39FF14' }}>{formatClp(item.product.price * item.quantity)}</span>
-                        </ListGroup.Item>
-                    ))}
-                </ListGroup>
-                
-                <h3 className="text-end" style={{ color: '#1E90FF' }}>TOTAL: <span style={{ color: '#39FF14' }}>{formatClp(totalOrder)}</span></h3>
-            </Modal.Body>
-            <Modal.Footer style={{ backgroundColor: '#000', borderTopColor: '#333' }}>
-                <Button variant="secondary" onClick={handleCloseAndAdvance}>
-                    Cerrar y Continuar
-                </Button>
-                <Button variant="success" onClick={handlePrint}>
-                    Imprimir Comprobante
-                </Button>
-            </Modal.Footer>
-        </Modal>
-    );
-};
