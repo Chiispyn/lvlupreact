@@ -1,10 +1,11 @@
-// level-up-gaming-frontend/src/pages/AdminVideosPage.tsx (CÓDIGO COMPLETO)
+// level-up-gaming-frontend/src/pages/AdminVideosPage.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form, Card } from 'react-bootstrap';
-import { Edit, Trash, ArrowLeft, PlusCircle, Video, Check, X, Star, AlertTriangle } from 'react-feather'; 
+import { Edit, Trash, ArrowLeft, PlusCircle, Video, Star, AlertTriangle, Check, X } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import AdminLayout from '../layouts/AdminLayout'; 
 
 // Interfaces (deben coincidir con el Backend)
 interface Video {
@@ -102,14 +103,13 @@ const AdminVideosPage: React.FC = () => {
     if (error) return <Container className="py-5"><Alert variant="danger">{error}</Alert></Container>;
     
     return (
-        <Container className="py-5">
+        <AdminLayout>
             <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                <Link to="/admin">
-                    <Button variant="outline-secondary" size="sm">
-                        <ArrowLeft size={16} className="me-2"/> Volver al Panel
-                    </Button>
-                </Link>
+                {/* Se quita el botón "Volver al Panel" */}
+                <div style={{ visibility: 'hidden', width: '150px' }}></div> 
+                
                 <h1 style={{ color: '#1E90FF' }}>Gestión de Videos</h1>
+                
                 <Button variant="success" onClick={() => setShowCreateModal(true)}>
                     <PlusCircle size={18} className="me-2"/> Nuevo Video
                 </Button>
@@ -123,7 +123,7 @@ const AdminVideosPage: React.FC = () => {
 
             {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
             <div className="table-responsive d-none d-md-block"> 
-                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                <Table striped bordered hover className="table-dark" style={{ backgroundColor: '#111', color: 'white' }}>
                     <thead>
                         <tr>
                             <th>Título</th>
@@ -135,7 +135,7 @@ const AdminVideosPage: React.FC = () => {
                     <tbody>
                         {videos.map((video) => (
                             <tr key={video.id}>
-                                <td style={{ color: '#39FF14' }}>{video.title}</td>
+                                <td style={{ color: 'white' }}>{video.title}</td>
                                 <td><a href={video.embedUrl} target="_blank" rel="noopener noreferrer">Ver Video</a></td>
                                 <td>
                                     <Button variant={video.isFeatured ? 'success' : 'secondary'} size="sm" onClick={() => handleToggleFeatured(video.id, video.isFeatured, video.title)} title={video.isFeatured ? 'Quitar de Home' : 'Destacar en Home'}>
@@ -198,7 +198,7 @@ const AdminVideosPage: React.FC = () => {
                 handleDelete={handleDelete}
                 itemName={itemToDelete?.name || 'este video'}
             />
-        </Container>
+        </AdminLayout>
     );
 };
 
@@ -208,7 +208,7 @@ export default AdminVideosPage;
 // ----------------------------------------------------
 // COMPONENTES MODAL AUXILIARES
 // ----------------------------------------------------
-// (Se requieren las definiciones de Modals auxiliares aquí)
+// (Implementamos los modales auxiliares para que el archivo compile)
 
 interface ConfirmDeleteModalProps { show: boolean; handleClose: () => void; handleDelete: () => void; itemName: string; }
 

@@ -36,5 +36,89 @@
         "isPaid": true,
         "status": "Entregado",
         "createdAt": "2025-11-05T20:16:24.953Z"
+    },
+    {
+        "id": "ea59c166-57ce-47e3-b286-9531bcdff0d7",
+        "userId": "u1",
+        "items": [
+            {
+                "product": {
+                    "id": "reward-101",
+                    "name": "[CANJE] Taza Gamer Edición Limitada",
+                    "price": 0,
+                    "imageUrl": "/images/taza-gamer.png",
+                    "countInStock": 1,
+                    "rating": 0,
+                    "numReviews": 0,
+                    "isTopSelling": false,
+                    "description": "Canjea tus puntos por una taza exclusiva de Level-Up.",
+                    "category": "Recompensa",
+                    "reviews": [],
+                    "specifications": "{\"Origen\":\"Recompensa\"}"
+                },
+                "quantity": 1,
+                "isRedeemed": true,
+                "pointsCost": 2800
+            },
+            {
+                "product": {
+                    "id": "JM002",
+                    "name": "Carcassonne",
+                    "description": "Un juego de colocación de fichas donde los jugadores construyen el paisaje alrededor de la fortaleza medieval. Es ideal para 2-5 jugadores.",
+                    "price": 24990,
+                    "imageUrl": "/images/juego-carcassonne.png",
+                    "rating": 4.5,
+                    "numReviews": 89,
+                    "isTopSelling": false,
+                    "countInStock": 15,
+                    "category": "Juegos de Mesa",
+                    "specifications": "{\"Jugadores\": \"2-5\", \"Tiempo\": \"35 min\", \"Tipo\": \"Colocación de Fichas\"}",
+                    "reviews": []
+                },
+                "quantity": 1,
+                "isRedeemed": false,
+                "pointsCost": 0
+            },
+            {
+                "product": {
+                    "id": "AC001",
+                    "name": "Controlador Inalámbrico Xbox Series X",
+                    "description": "Ofrece una experiencia de juego cómoda con botones mapeables y una respuesta táctil mejorada.",
+                    "price": 59990,
+                    "imageUrl": "/images/controlador-xbox.png",
+                    "rating": 4.9,
+                    "numReviews": 215,
+                    "isTopSelling": true,
+                    "countInStock": 40,
+                    "category": "Accesorios",
+                    "specifications": "{\"Conectividad\": \"Inalámbrica/Bluetooth\", \"Batería\": \"AA/Recargable\"}",
+                    "reviews": [
+                        {
+                            "id": "r3-1",
+                            "name": "Pedro A.",
+                            "rating": 5,
+                            "comment": "Es el mejor control que he tenido.",
+                            "createdAt": "2024-11-25T00:00:00Z"
+                        }
+                    ]
+                },
+                "quantity": 1,
+                "isRedeemed": false,
+                "pointsCost": 0
+            }
+        ],
+        "shippingAddress": {
+            "street": "Paicaví 3280",
+            "city": "Concepción",
+            "region": "Biobío",
+            "zipCode": "4030000",
+            "notes": ""
+        },
+        "paymentMethod": "webpay",
+        "totalPrice": 77984,
+        "shippingPrice": 10000,
+        "isPaid": true,
+        "status": "Pendiente",
+        "createdAt": "2025-11-07T03:48:21.420Z"
     }
 ]

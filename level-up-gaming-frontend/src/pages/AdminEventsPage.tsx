@@ -5,8 +5,7 @@ import { Container, Table, Alert, Spinner, Badge, Button, Modal, Row, Col, Form,
 import { Edit, Trash, ArrowLeft, PlusCircle, Calendar, MapPin, AlertTriangle, Eye, Hash } from 'react-feather'; 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-// 🚨 IMPORTACIÓN DE UTILITIES DE REGIONES (Usando el JSON real)
-import { ALL_REGIONS_DATA, getCommunesByRegionName } from '../utils/regionUtils';
+import AdminLayout from '../layouts/AdminLayout';
 
 
 // Interfaces (deben coincidir con el Backend)
@@ -15,12 +14,15 @@ interface Event {
     title: string;
     date: string; // YYYY-MM-DD
     time: string; // HH:MM
-    location: string; // "Comuna, Región" o "Lugar Fijo"
+    location: string;
     mapEmbed: string;
-    notes?: string; // Campo de notas logísticas
+    notes?: string;
 }
 
 const API_URL = '/api/events';
+
+import { ALL_REGIONS_DATA, getCommunesByRegionName } from '../utils/regionUtils';
+
 
 // ----------------------------------------------------
 // PÁGINA PRINCIPAL DE ADMINISTRACIÓN DE EVENTOS
@@ -37,7 +39,7 @@ const AdminEventsPage: React.FC = () => {
     // ESTADOS PARA MODALES
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [eventToDelete, setEventToDelete] = useState<{ id: string, title: string } | null>(null);
-    const [showDetailsModal, setShowDetailsModal] = useState(false); // 🚨 Nuevo estado para el modal de detalles
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
 
     const fetchEvents = async () => {
@@ -87,7 +89,6 @@ const AdminEventsPage: React.FC = () => {
         setSelectedEvent(event);
     };
     
-    // 🚨 Función para mostrar los detalles
     const handleShowDetails = (event: Event) => {
         setSelectedEvent(event);
         setShowDetailsModal(true);
@@ -98,13 +99,9 @@ const AdminEventsPage: React.FC = () => {
     if (error) return <Container className="py-5"><Alert variant="danger">{error}</Alert></Container>;
     
     return (
-        <Container className="py-5">
-            <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                <Link to="/admin">
-                    <Button variant="outline-secondary" size="sm">
-                        <ArrowLeft size={16} className="me-2"/> Volver al Panel
-                    </Button>
-                </Link>
+        <AdminLayout>
+            <div className="flex-grow-1 p-4">
+                <div style={{ visibility: 'hidden', width: '150px' }}></div> 
                 <h1 style={{ color: '#1E90FF' }}>Gestión de Eventos</h1>
                 <Button variant="success" onClick={() => setShowCreateModal(true)}>
                     <PlusCircle size={18} className="me-2"/> Nuevo Evento
@@ -119,24 +116,23 @@ const AdminEventsPage: React.FC = () => {
 
             {/* VISTA 1: TABLA COMPLETA (Escritorio/Tablet) */}
             <div className="table-responsive d-none d-md-block"> 
-                <Table striped bordered hover style={{ backgroundColor: '#111', color: 'white' }}>
+                <Table striped bordered hover className="table-dark" style={{ backgroundColor: '#111', color: 'white' }}>
                     <thead>
                         <tr>
                             <th>Título</th>
                             <th>Fecha</th>
-                            <th>Ubicación (Comuna, Región)</th>
+                            <th>Ubicación (Región)</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {events.map((event) => (
                             <tr key={event.id}>
-                                <td style={{ color: '#39FF14' }}>{event.title}</td>
+                                <td style={{ color: 'white' }}>{event.title}</td>
                                 <td>{new Date(event.date).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })} a las {event.time} hrs</td>
                                 <td><MapPin size={14} className="me-1"/>{event.location}</td>
                                 <td>
                                     <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(event)}><Edit size={14} /></Button>
-                                    {/* 🚨 Botón para Notas */}
                                     <Button variant="secondary" size="sm" className="me-2" onClick={() => handleShowDetails(event)}><Eye size={14} /></Button>
                                     <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}><Trash size={14} /></Button>
                                 </td>
@@ -146,7 +142,7 @@ const AdminEventsPage: React.FC = () => {
                 </Table>
             </div>
 
-            {/* VISTA 2: TARJETAS APILADAS (Móvil) */}
+            {/* 🚨 VISTA 2: TARJETAS APILADAS (Móvil) */}
             <Row className="d-block d-md-none g-3">
                 {events.map((event) => (
                     <Col xs={12} key={event.id}>
@@ -160,11 +156,7 @@ const AdminEventsPage: React.FC = () => {
                                 <p className="mb-3"><MapPin size={16} className="me-1"/> Ubicación: <strong>{event.location}</strong></p>
 
                                 <div className="d-grid gap-2">
-                                    {event.mapEmbed && ( 
-                                        <Button variant="primary" size="sm" as="a" href={event.mapEmbed} target="_blank" className="mb-2">Ver Mapa</Button>
-                                    )}
-                                    {/* 🚨 Botón para Notas */}
-                                    <Button variant="secondary" size="sm" onClick={() => handleShowDetails(event)}><Eye size={14} className="me-1"/> Ver Detalles</Button>
+                                    <Button variant="secondary" size="sm" onClick={() => handleShowDetails(event)}><Eye size={14} className="me-1"/> Ver Notas</Button>
                                     <Button variant="info" size="sm" onClick={() => handleEdit(event)}><Edit size={14} className="me-1"/> Editar</Button>
                                     <Button variant="danger" size="sm" onClick={() => confirmDelete(event.id, event.title)}><Trash size={14} className="me-1"/> Eliminar</Button>
                                 </div>
@@ -178,17 +170,10 @@ const AdminEventsPage: React.FC = () => {
             {/* Modal de Creación/Edición */}
             <EventModal
                 event={selectedEvent} 
-                show={showCreateModal || (!!selectedEvent && !showDetailsModal)} // Solo mostrar si no estamos viendo detalles
+                show={showCreateModal || (!!selectedEvent && !showDetailsModal)}
                 handleClose={() => { setSelectedEvent(null); setShowCreateModal(false); }}
                 fetchEvents={fetchEvents}
                 showStatus={showStatus}
-            />
-            
-            {/* 🚨 Modal de Detalles (Muestra las Notas) */}
-            <EventDetailsModal
-                event={selectedEvent}
-                show={showDetailsModal}
-                handleClose={() => { setSelectedEvent(null); setShowDetailsModal(false); }}
             />
             
             {/* Modal de Confirmación de Eliminación */}
@@ -198,7 +183,14 @@ const AdminEventsPage: React.FC = () => {
                 handleDelete={handleDelete}
                 itemName={eventToDelete?.title || 'este evento'}
             />
-        </Container>
+            
+            {/* 🚨 Modal de Detalles (Muestra las Notas) */}
+            <EventDetailsModal
+                event={selectedEvent}
+                show={showDetailsModal}
+                handleClose={() => { setSelectedEvent(null); setShowDetailsModal(false); }}
+            />
+        </AdminLayout>
     );
 };
 
@@ -209,6 +201,7 @@ export default AdminEventsPage;
 // COMPONENTES MODAL AUXILIARES
 // ----------------------------------------------------
 
+// Modal de Confirmación de Eliminación
 interface ConfirmDeleteModalProps { show: boolean; handleClose: () => void; handleDelete: () => void; itemName: string; }
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClose, handleDelete, itemName }) => {
@@ -222,7 +215,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ show, handleClo
 };
 
 
-// 🚨 NUEVO MODAL PARA MOSTRAR DETALLES Y NOTAS LOGÍSTICAS
+// Modal de Detalles y Notas (Para Eventos)
 interface EventDetailsModalProps { event: Event | null; show: boolean; handleClose: () => void; }
 
 const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, show, handleClose }) => {
@@ -248,7 +241,6 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, show, hand
                         borderLeft: '3px solid #1E90FF'
                     }}
                 >
-                    {/* 🚨 MOSTRAR LAS NOTAS AQUÍ */}
                     {event.notes || 'No se han registrado notas logísticas adicionales.'}
                 </div>
                 
@@ -272,7 +264,9 @@ interface EventModalProps { event: Event | null; show: boolean; handleClose: () 
 
 const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetchEvents, showStatus }) => {
     const isEditing = !!event;
+    // Obtener la fecha actual en formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
+    // Obtener la fecha máxima permitida (ej. 1 año a partir de ahora)
     const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10);
 
     // Separar la ubicación guardada para inicializar los selectores
@@ -320,8 +314,8 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
             const [commune, region] = locationParts.length === 2 ? [locationParts[0], locationParts[1]] : ['', locationParts[0]];
             
             setFormData({ title: event.title, date: event.date, time: event.time, location: event.location, mapEmbed: event.mapEmbed, notes: event.notes || '' });
-            setRegionSelected(region);
-            setCommuneSelected(commune);
+            setRegionSelected(region || event.location);
+            setCommuneSelected(commune || '');
         } else {
             setFormData({ title: '', date: today, time: '18:00', location: '', mapEmbed: '', notes: '' });
             setRegionSelected('');
@@ -334,15 +328,18 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
     const updateFormData = (e: React.ChangeEvent<any>) => {
         const { name, value, type } = e.target;
         
+        // Manejo especial para Región (Reset de Comuna)
         if (name === 'regionSelect') {
             setRegionSelected(value);
             setCommuneSelected(''); // Resetea comuna
             setFormData(prev => ({ ...prev, location: value })); // Temporalmente solo Región
         } 
+        // Manejo especial para Comuna (Finaliza la ubicación principal)
         else if (name === 'communeSelect') {
             setCommuneSelected(value);
             // El useEffect se encarga de rellenar formData.location con "Comuna, Región"
         }
+        // Manejo normal
         else {
             setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }));
         }
@@ -361,7 +358,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
         
         const payload = { ...formData };
         
-        // 1. Procesar el código que pegó el administrador
+        // 1. Procesar el código que pegó el administrador (extraer solo la URL)
         if (payload.mapEmbed.includes('<iframe') || payload.mapEmbed.includes('http')) {
              payload.mapEmbed = extractEmbedSrc(payload.mapEmbed);
         }
@@ -419,8 +416,7 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                                     value={formData.date} 
                                     onChange={updateFormData} 
                                     required 
-                                    min={today} 
-                                    max={maxDate} 
+                                    // Asumiendo que today y maxDate están definidos en el scope
                                     style={{ backgroundColor: '#333', color: 'white' }}
                                 />
                             </Form.Group>
@@ -447,7 +443,6 @@ const EventModal: React.FC<EventModalProps> = ({ event, show, handleClose, fetch
                                     style={{ backgroundColor: '#333', color: 'white' }}
                                 >
                                     <option value="">Seleccionar Región</option>
-                                    {/* 🚨 USANDO ALL_REGIONS_DATA DEL ARCHIVO DE UTILIDAD */}
                                     {ALL_REGIONS_DATA.map((reg: any) => (<option key={reg.region} value={reg.region}>{reg.region}</option>))}
                                 </Form.Select>
                             </Form.Group>

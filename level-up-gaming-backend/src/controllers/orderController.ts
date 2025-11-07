@@ -20,8 +20,11 @@ const addOrderItems = (req: Request, res: Response) => {
         return res.status(401).json({ message: 'Usuario no autenticado para crear la orden.' });
     }
 
-    // 1. Crear y guardar la nueva orden
-    const orders = readFromDb<Order>('orders');
+    let orders = readFromDb<Order>('orders');
+    if (!Array.isArray(orders)) {
+        console.warn('Orders data is not an array, initializing as empty array.');
+        orders = [];
+    }
     const newOrder: Order = {
         id: uuidv4(),
         userId: userId,
@@ -34,6 +37,7 @@ const addOrderItems = (req: Request, res: Response) => {
         status: 'Pendiente', 
         createdAt: new Date().toISOString(),
     };
+    console.log('Type of orders before push:', typeof orders, 'Value:', orders);
     orders.push(newOrder);
     writeToDb<Order>('orders', orders);
 

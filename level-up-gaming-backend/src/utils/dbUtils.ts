@@ -15,7 +15,12 @@ export const readFromDb = <T>(table: DbTable): T[] => {
     const dbPath = path.resolve(__dirname, `../db/${table}.json`);
     try {
         const data = fs.readFileSync(dbPath, 'utf-8');
-        return JSON.parse(data) as T[];
+        const parsedData = JSON.parse(data);
+        if (!Array.isArray(parsedData)) {
+            console.warn(`Content of ${table}.json is not an array. Initializing as empty array.`);
+            return [];
+        }
+        return parsedData as T[];
     } catch (error) {
         // Si el archivo no existe o hay un error, retorna una lista vacía.
         console.error(`Error reading from ${table}.json:`, error);

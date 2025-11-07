@@ -1,6 +1,7 @@
 // level-up-gaming-frontend/src/pages/AdminDashboard.tsx
 
 import React, { useState, useEffect } from 'react';
+import AdminLayout from '../layouts/AdminLayout';
 import { Container, Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
 import { Users, Package, ShoppingCart, BookOpen, Settings, MapPin, Video, DollarSign, AlertTriangle, Award } from 'react-feather'; 
 import { Link } from 'react-router-dom';
@@ -108,7 +109,7 @@ const AdminDashboard: React.FC = () => {
 
         } catch (error) {
             setTopSellingProductName('Error de carga');
-            console.error("Fallo al cargar la analítica.");
+            console.error("Fallo al cargar la analítica:", error);
         } finally {
             setLoadingStock(false); 
         }
@@ -121,7 +122,7 @@ const AdminDashboard: React.FC = () => {
 
 
     return (
-        <Container className="py-5">
+        <AdminLayout>
             <h1 className="text-center mb-5 display-4" style={{ color: '#1E90FF' }}><Settings className="me-3" size={36}/> Panel de Administración</h1>
             
             {/* 🚨 ALERTA CRÍTICA DE BAJO STOCK */}
@@ -188,7 +189,7 @@ const AdminDashboard: React.FC = () => {
             
             </Row>
 
-        </Container>
+        </AdminLayout>
     );
 };
 

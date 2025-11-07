@@ -5,7 +5,6 @@ import { Container, Row, Col, Card, ListGroup, Badge, Spinner, Alert, Button } f
 import { Users, Trello, MapPin, Gift, Clock, Hash, Calendar } from 'react-feather'; // 🚨 Importar Hash para Notas
 import { mockLevels } from '../data/mockData'; 
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 
 // Interfaces (deben coincidir con el Backend)
