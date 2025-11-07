@@ -5,7 +5,7 @@ Este proyecto es una aplicación de comercio electrónico Fullstack para la tien
 ## ✨ Características Principales
 
 - **Arquitectura Frontend/Backend Separada**: Desarrollo modular y escalable.
-- **Persistencia de Datos sin Base de Datos**: Los datos de usuarios y órdenes se guardan en archivos `.json`, sobreviviendo a reinicios del servidor.
+- **Persistencia de Datos sin Base de Datos**: Los datos de usuarios, órdenes, productos, blogs, eventos, recompensas y videos se guardan en archivos `.json`, sobreviviendo a reinicios del servidor. Las operaciones CRUD realizadas desde el panel de administración ahora se persisten en estos archivos.
 - **Sistema de Cuentas de Usuario**: Registro, inicio de sesión y actualización de perfiles.
 - **Gestión de Órdenes**: Creación y seguimiento de órdenes de compra.
 - **Sistema de Puntos de Fidelidad**: Los usuarios ganan puntos por registrarse, por referidos y, más importante, **por cada compra realizada**.
@@ -28,6 +28,11 @@ Este proyecto **simula una base de datos utilizando archivos JSON**, lo que perm
 - **Archivos**: 
     - `users.json`: Almacena todos los usuarios registrados, incluyendo el administrador de prueba. Aquí se actualizan los puntos de fidelidad.
     - `orders.json`: Almacena todas las órdenes de compra generadas.
+    - `blog.json`: Almacena las entradas del blog.
+    - `event.json`: Almacena los eventos.
+    - `reward.json`: Almacena las recompensas.
+    - `product.json`: Almacena los productos.
+    - `video.json`: Almacena los videos.
 
 Este enfoque hace que el proyecto sea completamente portable y funcional por sí mismo.
 
@@ -85,3 +90,64 @@ npx vitest --ui
 # Generar un reporte de cobertura de tests
 npm test -- --coverage
 ```
+
+
+Tests Implementados
+
+Hemos agregado tests para la página AdminDashboard usando data-testid en los componentes críticos. Los tests verifican que:
+
+Tarjetas de Administración (AdminCard) se renderizan correctamente:
+
+card-products, card-orders, card-users, card-events, card-rewards, card-blog, card-videos.
+
+Esto asegura que los enlaces a cada sección de administración existan.
+
+Cards de Analítica se muestran correctamente:
+
+card-total-revenue: Muestra los ingresos totales.
+
+card-orders-today: Muestra la cantidad de órdenes de hoy.
+
+card-top-product: Muestra el producto más vendido.
+
+Alerta de Stock Bajo (alert-low-stock) se renderiza si hay productos con stock crítico.
+
+Ejemplo de Test con Vitest / React Testing Library
+import { render, screen } from '@testing-library/react';
+import AdminDashboard from './AdminDashboard';
+import { BrowserRouter } from 'react-router-dom';
+
+describe('AdminDashboard', () => {
+  test('renderiza todas las tarjetas de administración', () => {
+    render(<BrowserRouter><AdminDashboard /></BrowserRouter>);
+    expect(screen.getByTestId('card-products')).toBeInTheDocument();
+    expect(screen.getByTestId('card-orders')).toBeInTheDocument();
+    expect(screen.getByTestId('card-users')).toBeInTheDocument();
+  });
+
+  test('renderiza cards de analítica', () => {
+    render(<BrowserRouter><AdminDashboard /></BrowserRouter>);
+    expect(screen.getByTestId('card-total-revenue')).toBeInTheDocument();
+    expect(screen.getByTestId('card-orders-today')).toBeInTheDocument();
+    expect(screen.getByTestId('card-top-product')).toBeInTheDocument();
+  });
+
+  test('muestra alerta de stock bajo si hay productos críticos', async () => {
+    render(<BrowserRouter><AdminDashboard /></BrowserRouter>);
+    // Nota: Este test requiere que la API devuelva al menos un producto con stock <= 5
+    const alert = await screen.findByTestId('alert-low-stock');
+    expect(alert).toBeInTheDocument();
+  });
+});
+
+Cómo Funciona Cada Test
+
+render: Renderiza el componente en un entorno de pruebas simulando un navegador real.
+
+screen.getByTestId: Busca un elemento por el atributo data-testid.
+
+toBeInTheDocument: Asegura que el elemento realmente existe en el DOM.
+
+findByTestId: Busca elementos que pueden aparecer después de una acción asíncrona (por ejemplo, datos cargados desde la API).
+
+expect(...).toBeInTheDocument(): Compara que el componente esperado esté presente, garantizando que la UI se renderiza correctamente y los tests detecten fallos si algo no aparece.

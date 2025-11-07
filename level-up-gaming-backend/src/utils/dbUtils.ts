@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Define el tipo genérico para nuestros datos
-export type DbTable = 'users' | 'orders' | 'products'; // Ampliable en el futuro
+export type DbTable = 'users' | 'orders' | 'products' | 'blog' | 'event' | 'reward' | 'video'; // Ampliable en el futuro
 
 /**
  * Lee y parsea un archivo JSON de la base de datos.

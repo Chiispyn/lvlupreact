@@ -44,13 +44,15 @@ describe('AdminDashboard', () => {
     await act(async () => {
       render(<Router><AdminDashboard /></Router>);
     });
-    expect(screen.getByText(/Gestión de Productos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Órdenes/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Usuarios/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Eventos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Recompensas/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Blog\/Noticias/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestión de Videos/i)).toBeInTheDocument();
+
+    // Usando data-testid para las tarjetas
+    expect(screen.getByTestId('card-products')).toBeInTheDocument();
+    expect(screen.getByTestId('card-orders')).toBeInTheDocument();
+    expect(screen.getByTestId('card-users')).toBeInTheDocument();
+    expect(screen.getByTestId('card-events')).toBeInTheDocument();
+    expect(screen.getByTestId('card-rewards')).toBeInTheDocument();
+    expect(screen.getByTestId('card-blog')).toBeInTheDocument();
+    expect(screen.getByTestId('card-videos')).toBeInTheDocument();
   });
 
   it('3. Debería mostrar una alerta cuando hay productos con bajo stock', async () => {
@@ -61,7 +63,7 @@ describe('AdminDashboard', () => {
     });
 
     await act(async () => {
-        vi.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(screen.getByText(/ALERTA DE INVENTARIO/i)).toBeInTheDocument();
@@ -75,7 +77,7 @@ describe('AdminDashboard', () => {
     });
 
     await act(async () => {
-        vi.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(screen.getByText(/Ingresos Totales/i)).toBeInTheDocument();
@@ -91,7 +93,7 @@ describe('AdminDashboard', () => {
     });
 
     await act(async () => {
-        vi.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(screen.getByText('$300')).toBeInTheDocument();
@@ -111,7 +113,7 @@ describe('AdminDashboard', () => {
     });
 
     await act(async () => {
-        vi.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(screen.queryByText(/ALERTA DE INVENTARIO/i)).not.toBeInTheDocument();

@@ -1,0 +1,1761 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AdminDashboard Snapshots > 1. Snapshot básico del AdminDashboard 1`] = `
+<DocumentFragment>
+  <div
+    class="d-flex"
+  >
+    <div
+      style="height: 100%; min-height: 85vh; background-color: rgb(17, 17, 17); padding-top: 20px;"
+    >
+      <h6
+        class="text-center mb-4 px-3"
+        style="color: rgb(57, 255, 20);"
+      >
+        PANEL DE NAVEGACIÓN
+      </h6>
+      <div
+        class="flex-column nav"
+      >
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="3"
+            />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
+          </svg>
+          Dashboard Principal
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/products"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <line
+              x1="16.5"
+              x2="7.5"
+              y1="9.4"
+              y2="4.21"
+            />
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline
+              points="3.27 6.96 12 12.01 20.73 6.96"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="22.08"
+              y2="12"
+            />
+          </svg>
+          Gestión de Productos
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/orders"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="9"
+              cy="21"
+              r="1"
+            />
+            <circle
+              cx="20"
+              cy="21"
+              r="1"
+            />
+            <path
+              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+            />
+          </svg>
+          Gestión de Órdenes
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/users"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+            />
+            <circle
+              cx="9"
+              cy="7"
+              r="4"
+            />
+            <path
+              d="M23 21v-2a4 4 0 0 0-3-3.87"
+            />
+            <path
+              d="M16 3.13a4 4 0 0 1 0 7.75"
+            />
+          </svg>
+          Gestión de Usuarios
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/events"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+            />
+            <circle
+              cx="12"
+              cy="10"
+              r="3"
+            />
+          </svg>
+          Gestión de Eventos
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/rewards"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="8"
+              r="7"
+            />
+            <polyline
+              points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+            />
+          </svg>
+          Gestión de Recompensas
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/blog"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+            />
+            <path
+              d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+            />
+          </svg>
+          Gestión de Blog/Noticias
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/videos"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polygon
+              points="23 7 16 12 23 17 23 7"
+            />
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="15"
+              x="1"
+              y="5"
+            />
+          </svg>
+          Gestión de Videos
+        </a>
+      </div>
+    </div>
+    <div
+      class="flex-grow-1 p-4"
+      style="margin-left: 260px;"
+    >
+      <div
+        class="container-fluid"
+      >
+        <h1
+          class="text-center mb-5 display-4"
+          style="color: rgb(30, 144, 255);"
+        >
+          <svg
+            class="me-3"
+            fill="none"
+            height="36"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="36"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="3"
+            />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
+          </svg>
+           Panel de Administración
+        </h1>
+        <h2
+          class="mt-5 pt-3 border-top"
+          style="color: rgb(57, 255, 20);"
+        >
+          Boletín de Ventas (Datos Reales)
+        </h2>
+        <div
+          class="mb-5 row"
+        >
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(57, 255, 20);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line
+                    x1="12"
+                    x2="12"
+                    y1="1"
+                    y2="23"
+                  />
+                  <path
+                    d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Ingresos Totales
+                </div>
+                <div
+                  class="display-6"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(30, 144, 255);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="9"
+                    cy="21"
+                    r="1"
+                  />
+                  <circle
+                    cx="20"
+                    cy="21"
+                    r="1"
+                  />
+                  <path
+                    d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Órdenes Nuevas (Hoy)
+                </div>
+                <div
+                  class="display-6"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(57, 255, 20);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line
+                    x1="16.5"
+                    x2="7.5"
+                    y1="9.4"
+                    y2="4.21"
+                  />
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                  />
+                  <polyline
+                    points="3.27 6.96 12 12.01 20.73 6.96"
+                  />
+                  <line
+                    x1="12"
+                    x2="12"
+                    y1="22.08"
+                    y2="12"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Producto Más Vendido
+                </div>
+                <div
+                  class="lead"
+                  style="color: rgb(30, 144, 255); font-weight: bold;"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2
+          class="mt-5 pt-3 border-top"
+          style="color: rgb(57, 255, 20);"
+        >
+          Herramientas de Gestión
+        </h2>
+        <div
+          class="justify-content-center row"
+        >
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <line
+                      x1="16.5"
+                      x2="7.5"
+                      y1="9.4"
+                      y2="4.21"
+                    />
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                    />
+                    <polyline
+                      points="3.27 6.96 12 12.01 20.73 6.96"
+                    />
+                    <line
+                      x1="12"
+                      x2="12"
+                      y1="22.08"
+                      y2="12"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Productos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/products"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="9"
+                      cy="21"
+                      r="1"
+                    />
+                    <circle
+                      cx="20"
+                      cy="21"
+                      r="1"
+                    />
+                    <path
+                      d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Órdenes
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/orders"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    />
+                    <circle
+                      cx="9"
+                      cy="7"
+                      r="4"
+                    />
+                    <path
+                      d="M23 21v-2a4 4 0 0 0-3-3.87"
+                    />
+                    <path
+                      d="M16 3.13a4 4 0 0 1 0 7.75"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Usuarios
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/users"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    />
+                    <circle
+                      cx="12"
+                      cy="10"
+                      r="3"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Eventos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/events"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="12"
+                      cy="8"
+                      r="7"
+                    />
+                    <polyline
+                      points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Recompensas
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/rewards"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+                    />
+                    <path
+                      d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Blog/Noticias
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/blog"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polygon
+                      points="23 7 16 12 23 17 23 7"
+                    />
+                    <rect
+                      height="14"
+                      rx="2"
+                      ry="2"
+                      width="15"
+                      x="1"
+                      y="5"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Videos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/videos"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AdminDashboard Snapshots > 2. Snapshot con productos de bajo stock 1`] = `
+<DocumentFragment>
+  <div
+    class="d-flex"
+  >
+    <div
+      style="height: 100%; min-height: 85vh; background-color: rgb(17, 17, 17); padding-top: 20px;"
+    >
+      <h6
+        class="text-center mb-4 px-3"
+        style="color: rgb(57, 255, 20);"
+      >
+        PANEL DE NAVEGACIÓN
+      </h6>
+      <div
+        class="flex-column nav"
+      >
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="3"
+            />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
+          </svg>
+          Dashboard Principal
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/products"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <line
+              x1="16.5"
+              x2="7.5"
+              y1="9.4"
+              y2="4.21"
+            />
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline
+              points="3.27 6.96 12 12.01 20.73 6.96"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="22.08"
+              y2="12"
+            />
+          </svg>
+          Gestión de Productos
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/orders"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="9"
+              cy="21"
+              r="1"
+            />
+            <circle
+              cx="20"
+              cy="21"
+              r="1"
+            />
+            <path
+              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+            />
+          </svg>
+          Gestión de Órdenes
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/users"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+            />
+            <circle
+              cx="9"
+              cy="7"
+              r="4"
+            />
+            <path
+              d="M23 21v-2a4 4 0 0 0-3-3.87"
+            />
+            <path
+              d="M16 3.13a4 4 0 0 1 0 7.75"
+            />
+          </svg>
+          Gestión de Usuarios
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/events"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+            />
+            <circle
+              cx="12"
+              cy="10"
+              r="3"
+            />
+          </svg>
+          Gestión de Eventos
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/rewards"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="8"
+              r="7"
+            />
+            <polyline
+              points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+            />
+          </svg>
+          Gestión de Recompensas
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/blog"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+            />
+            <path
+              d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+            />
+          </svg>
+          Gestión de Blog/Noticias
+        </a>
+        <a
+          class="text-decoration-none nav-link"
+          data-discover="true"
+          href="/admin/videos"
+          style="color: rgb(221, 221, 221); background-color: transparent; border-left: 4px solid transparent; padding: 10px 15px; transition: all 0.2s;"
+        >
+          <svg
+            class="me-2"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            style="color: rgb(30, 144, 255);"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polygon
+              points="23 7 16 12 23 17 23 7"
+            />
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="15"
+              x="1"
+              y="5"
+            />
+          </svg>
+          Gestión de Videos
+        </a>
+      </div>
+    </div>
+    <div
+      class="flex-grow-1 p-4"
+      style="margin-left: 260px;"
+    >
+      <div
+        class="container-fluid"
+      >
+        <h1
+          class="text-center mb-5 display-4"
+          style="color: rgb(30, 144, 255);"
+        >
+          <svg
+            class="me-3"
+            fill="none"
+            height="36"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="36"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="3"
+            />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
+          </svg>
+           Panel de Administración
+        </h1>
+        <h2
+          class="mt-5 pt-3 border-top"
+          style="color: rgb(57, 255, 20);"
+        >
+          Boletín de Ventas (Datos Reales)
+        </h2>
+        <div
+          class="mb-5 row"
+        >
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(57, 255, 20);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line
+                    x1="12"
+                    x2="12"
+                    y1="1"
+                    y2="23"
+                  />
+                  <path
+                    d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Ingresos Totales
+                </div>
+                <div
+                  class="display-6"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(30, 144, 255);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="9"
+                    cy="21"
+                    r="1"
+                  />
+                  <circle
+                    cx="20"
+                    cy="21"
+                    r="1"
+                  />
+                  <path
+                    d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Órdenes Nuevas (Hoy)
+                </div>
+                <div
+                  class="display-6"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-3 col-md-4"
+          >
+            <div
+              class="card"
+              style="background-color: rgb(34, 34, 34); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="color: rgb(57, 255, 20);"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line
+                    x1="16.5"
+                    x2="7.5"
+                    y1="9.4"
+                    y2="4.21"
+                  />
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                  />
+                  <polyline
+                    points="3.27 6.96 12 12.01 20.73 6.96"
+                  />
+                  <line
+                    x1="12"
+                    x2="12"
+                    y1="22.08"
+                    y2="12"
+                  />
+                </svg>
+                <div
+                  class="mt-2 card-title h5"
+                  style="color: var(--color-gris-claro);"
+                >
+                  Producto Más Vendido
+                </div>
+                <div
+                  class="lead"
+                  style="color: rgb(30, 144, 255); font-weight: bold;"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2
+          class="mt-5 pt-3 border-top"
+          style="color: rgb(57, 255, 20);"
+        >
+          Herramientas de Gestión
+        </h2>
+        <div
+          class="justify-content-center row"
+        >
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <line
+                      x1="16.5"
+                      x2="7.5"
+                      y1="9.4"
+                      y2="4.21"
+                    />
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                    />
+                    <polyline
+                      points="3.27 6.96 12 12.01 20.73 6.96"
+                    />
+                    <line
+                      x1="12"
+                      x2="12"
+                      y1="22.08"
+                      y2="12"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Productos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/products"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="9"
+                      cy="21"
+                      r="1"
+                    />
+                    <circle
+                      cx="20"
+                      cy="21"
+                      r="1"
+                    />
+                    <path
+                      d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Órdenes
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/orders"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    />
+                    <circle
+                      cx="9"
+                      cy="7"
+                      r="4"
+                    />
+                    <path
+                      d="M23 21v-2a4 4 0 0 0-3-3.87"
+                    />
+                    <path
+                      d="M16 3.13a4 4 0 0 1 0 7.75"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Usuarios
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/users"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    />
+                    <circle
+                      cx="12"
+                      cy="10"
+                      r="3"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Eventos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/events"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="12"
+                      cy="8"
+                      r="7"
+                    />
+                    <polyline
+                      points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Recompensas
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/rewards"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+                    />
+                    <path
+                      d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Blog/Noticias
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/blog"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mb-4 col-lg-4 col-md-6 col-12"
+          >
+            <div
+              class="h-100 shadow-sm border-0 text-center card"
+              style="background-color: rgb(17, 17, 17); color: white;"
+            >
+              <div
+                class="card-body"
+              >
+                <div
+                  class="mb-3"
+                  style="color: rgb(30, 144, 255);"
+                >
+                  <svg
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polygon
+                      points="23 7 16 12 23 17 23 7"
+                    />
+                    <rect
+                      height="14"
+                      rx="2"
+                      ry="2"
+                      width="15"
+                      x="1"
+                      y="5"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="card-title h5"
+                  style="color: rgb(57, 255, 20);"
+                >
+                  Gestión de Videos
+                </div>
+                <a
+                  class="btn btn-outline-primary mt-2"
+                  data-discover="true"
+                  href="/admin/videos"
+                >
+                  Administrar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

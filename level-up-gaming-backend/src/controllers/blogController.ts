@@ -1,8 +1,9 @@
 // level-up-gaming-backend/src/controllers/blogController.ts
 
 import { type Request, type Response } from 'express';
-import { mockBlogPosts, BlogPost } from '../data/blogData'; 
+import { getBlogPosts as readBlogPosts, BlogPost } from '../data/blogData'; 
 import { v4 as uuidv4 } from 'uuid';
+import { writeToDb } from '../utils/dbUtils';
 
 // ----------------------------------------------------
 // LECTURA (GET)
@@ -10,9 +11,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 const getBlogPosts = (req: Request, res: Response) => {
     try {
-        if (!mockBlogPosts) { return res.status(200).json([]); }
+        const blogPosts = readBlogPosts();
+        if (!blogPosts) { return res.status(200).json([]); }
         
-        const sortedPosts = mockBlogPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const sortedPosts = blogPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         res.json(sortedPosts);
     } catch (error) {
         res.status(500).json({ message: 'Error interno del servidor al procesar blog.' });
@@ -21,7 +23,8 @@ const getBlogPosts = (req: Request, res: Response) => {
 
 const getBlogPostById = (req: Request, res: Response) => {
     const { id } = req.params;
-    const post = mockBlogPosts.find(p => p.id === id); // Busca el post por ID
+    const blogPosts = readBlogPosts();
+    const post = blogPosts.find(p => p.id === id); // Busca el post por ID
 
     if (post) {
         res.json(post);
@@ -52,7 +55,9 @@ const createBlogPost = (req: Request, res: Response) => {
             createdAt: new Date().toISOString(),
         };
 
-        mockBlogPosts.push(newPost);
+        const blogPosts = readBlogPosts();
+        blogPosts.push(newPost);
+        writeToDb('blog', blogPosts);
         res.status(201).json(newPost);
 
     } catch (error) {
@@ -64,11 +69,13 @@ const updateBlogPost = (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
-        const postIndex = mockBlogPosts.findIndex(p => p.id === id);
+        const blogPosts = readBlogPosts();
+        const postIndex = blogPosts.findIndex(p => p.id === id);
 
         if (postIndex !== -1) {
-            mockBlogPosts[postIndex] = { ...mockBlogPosts[postIndex], ...updateData };
-            res.json(mockBlogPosts[postIndex]);
+            blogPosts[postIndex] = { ...blogPosts[postIndex], ...updateData };
+            writeToDb('blog', blogPosts);
+            res.json(blogPosts[postIndex]);
             return;
         }
         res.status(404).json({ message: 'Post no encontrado para actualizar.' });
@@ -79,11 +86,13 @@ const updateBlogPost = (req: Request, res: Response) => {
 
 const deleteBlogPost = (req: Request, res: Response) => {
     const { id } = req.params;
-    const initialLength = mockBlogPosts.length;
+    let blogPosts = readBlogPosts();
+    const initialLength = blogPosts.length;
     
-    mockBlogPosts.splice(0, mockBlogPosts.length, ...mockBlogPosts.filter(p => p.id !== id)); 
+    blogPosts = blogPosts.filter(p => p.id !== id); 
+    writeToDb('blog', blogPosts);
 
-    if (mockBlogPosts.length < initialLength) {
+    if (blogPosts.length < initialLength) {
         res.status(200).json({ message: 'Post eliminado.' });
     } else {
         res.status(404).json({ message: 'Post no encontrado.' });
